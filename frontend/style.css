@@ -1,0 +1,640 @@
+/* Global Variables */
+:root {
+  --bg-color: #121212;
+  --header-bg: #1E1E1E;
+  --card-bg: #1E1E1E;
+  --accent-color: #FF9800;
+  --success-color: #42AC6A;
+  --button-bg: #3A3A3A;
+  --button-hover: #505050;
+  --font-family: 'Roboto Flex', sans-serif;
+}
+
+/* Global Reset and Base Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: #FFFFFF;
+  line-height: 1.6;
+  scroll-behavior: smooth;
+}
+
+/* HEADER */
+header.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--header-bg);
+  padding: -8rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.last-updated {
+  display: block;
+  width: 100;
+  border-bottom: 0px solid red;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+}
+
+
+.top-bar .center h1 {
+  position: relative;
+  top: 10px; 
+}
+
+.top-bar .center .last-updated {
+  position: relative;
+  top: -25px; 
+}
+
+.top-bar .left, .top-bar .right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.top-bar .center {
+  text-align: center;
+  flex-grow: 1;
+}
+.top-bar h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.time {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.date {
+  font-size: 1.1rem;
+  font-weight: 300;
+}
+.battery-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.battery-icon {
+  width: 55px;
+  height: auto;
+  position: relative;
+  top: 9px; 
+  left: 80px;
+}
+.battery-text {
+  font-size: 1rem;
+  position: relative;
+  top: 10px;
+  left: 81px;
+}
+.wifi-icon {
+  width: 55px;
+  height: auto;
+  position: relative;
+  top: 8px;
+  left: -80px;
+}
+.connection p {
+  position: relative;
+  top: 7px;
+  left: -90px;
+}
+.settings-icon {
+  width: 40px;
+  height: auto;
+  position: relative;
+  left: -46px;
+  top: 8px;
+}
+.settings p {
+  position: relative;
+  left: -54px;
+  top: 10px;
+}
+.time-wrapper {
+  display: inline-block;
+  text-align: center;
+  line-height: 1;
+}
+.time-primary {
+  display: block;
+  font-size: 2rem;
+  position: relative;
+  top: 5px;
+  left: 50px;
+}
+.time-secondary {
+  display: block;
+  font-size: 1.1rem;
+  margin-top: 0px;
+  left: 50px;
+  position: relative;
+  top: 14px;
+}
+
+/* MAIN Content */
+main {
+  padding: 2rem;
+}
+
+/* Card Style for Panels */
+.card {
+  background-color: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+}
+.overview {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  margin-bottom: 2rem;
+}
+.overview .card {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* Labels and Values */
+.label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.value {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+.estimate {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+.estimate span {
+  color: var(--accent-color);
+}
+
+/* Icon Sizes */
+.icon {
+  width: 40px;
+  height: auto;
+  margin-bottom: 0.5rem;
+}
+.icon-small {
+  width: 60px;
+  height: auto;
+}
+
+/* Temperature with Icons */
+.temp-with-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 20px;
+}
+
+#target-temperature {
+  /* push it away from the buttons without touching any other .value */
+  margin: 0 1rem; /* top/bottom 0, left/right 1rem – adjust as you need */
+}
+
+
+/* Target the card containing "Current Temperature" */
+.card.temp.current {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 1.9rem;
+}
+.card.temp.current .label {
+  position: relative;
+  top: -70px;
+  margin-bottom: -5px;
+}
+.card.temp.current .value {
+  position: relative;
+  top: -5px;
+  font-size: 3rem;
+  margin-top: -35px;
+}
+.card.temp.current .icon {
+  width: 65px;
+  height: auto;
+  position: relative;
+  top: 45px;
+  margin-bottom: -20px;
+  right: 100px;
+}
+
+/* Usage Card */
+.card.usage .value {
+  font-size: 1.5rem;
+}
+
+.overview .card {
+  min-height: 60px;
+}
+
+.card.temp.current,
+.card.temp.target {
+  align-self: flex-start;
+}
+
+.card.temp.target {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 47px;
+}
+
+.target-temp-btn {
+  /* Optionally, set dimensions so they match your other control buttons: */
+  width: 100px;    
+  height: 100px;
+  /* If you want to adjust padding or margins differently just for these buttons, add here */
+}
+
+
+/* Anomaly Section */
+.anomaly {
+  background-color: var(--header-bg);
+  border-radius: 20px;
+  padding: 1.5rem;
+  text-align: center;
+  border: 2px solid var(--success-color, #42AC6A);
+  border: 2px solid #42AC6A !important;
+  margin-top: 30px;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+/* pulled in from inline index.html */
+.anomaly.detected {
+  border-color: #E53935 !important;
+}
+
+
+.anomaly h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.anomaly .subtext {
+  font-size: 1rem;
+  font-weight: 300;
+  margin-bottom: 1rem;
+}
+.anomaly .details {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: transparent;
+  border: 1px solid #fff;
+  border-radius: 6px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+.controls-left,
+.controls-right {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  flex: 2;
+  justify-content: center;
+}
+.controls-middle {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  flex: 0;
+}
+.controls-left .control-button,
+.controls-right .control-button {
+  flex: 1;
+  min-width: 140px;
+  min-height: 60px;
+}
+.controls-middle .control-button {
+  width: auto;
+  padding: 0.75rem 1.5rem;
+}
+
+/* New Controls Section Styling */
+.card-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -235px; /* This negative margin brings the entire controls section up. Adjust as needed. */
+  padding: 0 2rem;   /* Optional: adds side padding */
+}
+
+/* Styles for each group of controls */
+.current-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  border: 2px solid #1E1E1E;
+  border-radius: 8px;
+  padding: 0.75rem 4.85rem;
+  gap: 5rem;
+  /* Adjust the position of the current-controls box separately */
+  margin-left: -32px;   /* Moves it to the right */
+  margin-top: 17px;    /* Moves it down (or use a negative margin to move it up) */
+}
+
+.target-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  border: 2px solid #1E1E1E;
+  border-radius: 8px;
+  padding: 0.75rem 3.75rem;
+  gap: 5rem;
+  /* Adjust the position of the target-controls box separately */
+  margin-right: -33px;  /* Moves it to the left */
+  margin-top: 17px;    /* Moves it down */
+}
+
+
+.boost-button {
+  height: 157px;
+}
+
+.heat-button {
+  height: 147px;
+}
+
+/* Update button style for these controls */
+.control-button {
+  padding: 10px 20px;   /* Increase the padding so the button box is slightly bigger */
+  min-height: 50px;     /* Increase the minimum height; adjust as necessary */
+  font-size: 1rem;      /* Ensure text remains readable; adjust if needed */
+}
+
+
+/* Common button styling */
+.control-button {
+  background-color: #3A3A3A;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  text-align: center;
+}
+.control-button:hover {
+  background-color: var(--button-hover);
+}
+.control-button:active {
+  transform: scale(0.97);
+}
+
+/* NEW: Resolution Toggle Button positioning */
+#resolution-toggle {
+  margin-left: auto;
+  margin-right: 140px;
+  display: block;
+  padding: 10px 20px;  /* Increase these values to make the button bigger */
+  border: 2px solid var(--accent-color); /* Optional: adds a border to enhance the box */
+  border-radius: 8px;
+  position: relative;  /* Add this property */
+  top: -8px; 
+  right: 2px;
+}
+
+/* Insights and Tips */
+.tips {
+  background-color: #42AC6A !important;
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #FFFFFF;
+}
+.insights, .tips {
+  background-color: var(--header-bg);
+  border-radius: 16px;
+  padding: 1.5rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.insights h2, .tips h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.insights p, .tips p {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+.insights .success {
+  color: var(--success-color);
+  font-weight: 700;
+  margin-top: 1rem;
+}
+
+.card-controls > div {
+  transition: transform 0.2s ease;    /* match .card’s transition */
+}
+.card-controls > div:hover {
+  transform: translateY(-4px);       /* same lift distance as .card:hover */
+}
+
+.middle‑wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;  /* center them horizontally */
+  align-items: center;      /* center them vertically if they wrap */
+  gap: 1rem;                /* space between buttons */
+  width: 100%;              /* take up the full line so centering works */
+  margin: 2rem auto;        /* some vertical breathing room */
+}
+
+
+/* Footer */
+footer {
+  background-color: var(--header-bg);
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  margin-top: -2rem;
+  border-top: 1px solid #333;
+}
+footer a {
+  color: var(--success-color);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .overview {
+    flex-direction: column;
+    align-items: center;
+  }
+  footer {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+}
+  
+/* Tablet / small laptop */
+@media (max-width: 1024px) {
+  /* make overview cards two‑up instead of stretching full width */
+  .overview {
+    justify-content: center;
+  }
+  .overview .card {
+    flex: 1 1 45%;
+    max-width: 45%;
+    margin-bottom: 1rem;
+  }
+
+  /* stack your card‑controls vertically */
+  .card-controls {
+    flex-direction: column;
+    padding: 0 1rem;
+    margin-top: 0;
+  }
+  .card-controls > div {
+    width: 100%;
+    margin: 0 auto 1rem;
+  }
+
+  /* tighten up the big controls section */
+  .controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .controls-left,
+  .controls-right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+
+/* phablet / large phone */
+@media (max-width: 600px) {
+  /* stack all overview cards */
+  .overview .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  /* controls become a single column each side */
+  .controls-left,
+  .controls-right {
+    flex-direction: column;
+  }
+
+  /* collapse card controls even tighter */
+  .card-controls {
+    margin-top: 0;
+    padding: 0;
+  }
+  .card-controls > div {
+    margin: 0 auto 1rem;
+  }
+
+  /* action‐buttons stack vertically too */
+  .action‑buttons {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* give more breathing room on your big panels */
+  .anomaly,
+  .insights,
+  .tips {
+    margin: 1rem 0;
+  }
+}
+
+/* phones */
+@media (max-width: 480px) {
+  /* header collapses to a vertical layout */
+  header.top-bar {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  .top-bar .left,
+  .top-bar .right {
+    justify-content: center;
+  }
+
+  /* bring the title to the top on small phones */
+  .top-bar .center {
+    order: -1;  
+  }
+
+  /* tighten up padding on everything */
+  main {
+    padding: 1rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+
+  /* scale down fonts */
+  .label {
+    font-size: 1rem;
+  }
+  .value {
+    font-size: 2.5rem;
+  }
+
+  /* controls spacing */
+  .controls {
+    gap: 0.75rem;
+  }
+}
+
+

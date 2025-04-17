@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home Energy Monitor</title>
+  <link rel="stylesheet" href="globals.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:wght@300;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="left">
+      <div class="time-wrapper">
+        <span id="header-time" class="time-primary">16:49</span>
+        <span id="header-date" class="time-secondary">16/07</span>
+      </div>
+      <div class="battery-wrap">
+        <img src="img/battery.svg" alt="Battery Level" class="battery-icon" />
+        <span class="battery-text">64%</span>
+      </div>
+    </div>
+    <div class="center">
+      <h1>Home Energy Monitor</h1>
+      <button id="resolution-toggle" class="control-button" style="margin-top:10px;">Current Usage - per minute</button>
+      <p class="last-updated">Last updated: 16:32</p>
+    </div>
+    <div class="right">
+      <div class="connection">
+        <img src="img/wifi.svg" alt="Wi-Fi Connected" class="wifi-icon" />
+        <p>Connected</p>
+      </div>
+      <div class="settings">
+        <img src="img/settings.svg" alt="Settings" class="settings-icon" />
+        <p>Settings</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section class="overview">
+      <div class="card temp current">
+        <img src="img/currenttemp.svg" alt="Thermometer Icon" class="icon" />
+        <p class="label">Current Temperature</p>
+        <p class="value">18°C</p>
+        <p class="estimate">Estimated time to reach target: <span>36s</span></p>
+      </div>
+      <div class="card usage">
+        <p class="label">Current Usage</p>
+        <p id="current-usage" class="value">1.24kW</p>
+        <canvas id="usageGraph" width="300" height="200"></canvas>
+      </div>
+      <div class="card temp target">
+        <p class="label">Target Temperature</p>
+        <div class="temp-with-icon">
+          <button id="decrease-temp-button" class="control-button target-temp-btn">
+            <img src="img/dectemp.svg" alt="Decrease Temp Icon" class="icon-small" />
+          </button>
+          <p id="target-temperature" class="value">24°C</p>
+          <button id="increase-temp-button" class="control-button target-temp-btn">
+            <img src="img/inctemp.svg" alt="Increase Temp Icon" class="icon-small" />
+          </button>
+        </div>
+      </div>
+    </section>
+    <section class="card-controls">
+      <div class="current-controls">
+        <button class="control-button boost-button">
+          <img src="img/boostmode.svg" alt="Boost Mode Icon" />
+          <span>Boost Mode</span>
+        </button>
+        <button class="control-button">
+          <img src="img/ecomode.svg" alt="Eco Mode Icon" />
+          <span>Eco Mode</span>
+        </button>
+      </div>
+      <div class="target-controls">
+        <button class="control-button heat-button">
+          <img src="img/heatwater.svg" alt="Heat Water Icon" />
+          <span>Heat Water</span>
+        </button>
+        <button class="control-button">
+          <img src="img/schedtemp.svg" alt="Schedule Temp Icon" />
+          <span>Schedule Temperature</span>
+        </button>
+      </div>
+    </section>
+    <div class="middle-wrapper">
+      <section class="anomaly" id="anomaly-box">
+        <h2 id="anomaly-status">No Anomalies Detected!</h2>
+        <p class="subtext">You are all good for now!</p>
+        <p id="anomaly-details">Latest data not loaded yet.</p>
+        <button class="details">Anomaly Details</button>
+      </section>
+      <section class="action-buttons">
+        <button id="select-presets" class="control-button">Select Presets</button>
+        <button id="view-historical-data" class="control-button">View Historical Data</button>
+        <button id="view-tutorial" class="control-button">View Tutorial</button>
+      </section>
+      <section class="insights">
+        <h2><img src="img/qinsight.svg" alt="Quick Insight Icon" /> Quick Insights</h2>
+        <p>Average energy usage decreased by 10% over the last month.</p>
+        <p>Today’s usage is less than yesterday by 23.4kW.</p>
+        <p class="success">Well Done!</p>
+      </section>
+    </div>
+    <section class="tips">
+      <h2><img src="img/lightbulb.svg" alt="Tips Icon" /> Personalised Energy Tips</h2>
+      <p>Lowering your thermostat by 1°C during off-peak hours could reduce usage by up to 5%.</p>
+      <p>Try turning off any devices that are not currently in use.</p>
+    </section>
+  </main>
+  <footer>
+    <p class="footer-left">UI designed by Rohaan T Mirza</p>
+    <p class="footer-right">Icons by <a href="https://icons8.com" target="_blank" rel="noopener noreferrer">icons8.com</a></p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
