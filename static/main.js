@@ -1,9 +1,6 @@
-// main.js
+// ----- Available Resolutions Configuration -----
 
-// ----- Resolution Toggle & Anomaly Checking -----
-
-// Define each resolution along with its button label and chart labels
-const resolutions = [
+const resolutions = [           //define each resolution along with its button label and chart labels
   {
     key: "minute",
     buttonLabel: "Per Minute",
@@ -32,25 +29,22 @@ const resolutions = [
 
 let currentResolutionIndex = 0;
 
-/**
- * Returns the current resolution object.
- */
-const getCurrentResolution = () => resolutions[currentResolutionIndex];
 
-/**
- * Updates the resolution-toggle button text.
- */
-function updateResolutionButton() {
+let anomalyHandled     = false;
+let pendingAnomalyData = null;
+let pausedOnAnomaly = false;
+let anomalyInterval;
+
+const getCurrentResolution = () => resolutions[currentResolutionIndex];     //returns the currently selected resolution settings
+
+function updateResolutionButton() {    //updates the resolution toggle button text
   const { buttonLabel } = getCurrentResolution();
   document.getElementById("resolution-toggle").innerText =
     `Current Usage - ${buttonLabel}`;
 }
 
-/**
- * Clears the chart data and updates its labels based on the current resolution.
- */
 function resetChartData() {
-  const { chartLabel, axisLabel } = getCurrentResolution();
+  const { chartLabel, axisLabel } = getCurrentResolution();     //clears the chart data and updates its labels based on the current resolution
   const chart = window.usageChart;
 
   chart.data.labels = [];
@@ -60,11 +54,7 @@ function resetChartData() {
   chart.update();
 }
 
-/**
- * Sets up the click handler for the resolution-toggle button,
- * cycling through resolutions and resetting the chart.
- */
-function setupResolutionToggle() {
+function setupResolutionToggle() {      //cycle through available resolutions on button click
   const btn = document.getElementById("resolution-toggle");
   btn.addEventListener("click", () => {
     currentResolutionIndex = (currentResolutionIndex + 1) % resolutions.length;
@@ -75,11 +65,10 @@ function setupResolutionToggle() {
   });
 }
 
-/**
- * Polls the backend for anomaly data, updates UI text,
- * toggles the detected class, updates header & chart.
- */
-async function checkAnomaly() {
+// ----- Anomaly Polling and UI Updates -----
+
+async function checkAnomaly() {    //polls the backend for anomaly data, updates UI text and border colour, updates header/date, appends to chart and handles the pause on anomaly logic
+  if (pausedOnAnomaly) return;          
   try {
     const { key } = getCurrentResolution();
     const resp = await fetch(`http://localhost:5000/current_status?resolution=${key}`, {
@@ -87,24 +76,55 @@ async function checkAnomaly() {
     });
     const data = await resp.json();
 
-    // Update anomaly status
+    //update anomaly status
     document.getElementById("anomaly-status").innerText = data.status;
-    document.getElementById("anomaly-details").innerText =
-      `Time: ${data.hour} | Power: ${data.latestPower} kW`;
+    const fixedDate2 = data.date.replace(/\/\d{4}$/, '/2025');      //force the year in the displayed date to 2025
+    document.getElementById("anomaly-details").innerText = `Date: ${fixedDate2} | Time: ${data.time} | Power: ${data.latestPower} kW`;
 
-    // Toggle border color
+    //toggle border color
     document.getElementById("anomaly-box")
       .classList.toggle("detected", data.status !== "No Anomalies Detected!");
 
-    // Update header time & date
-    document.getElementById("header-time").innerText = data.time;
-    document.getElementById("header-date").innerText = data.date;
+    if (data.status !== "No Anomalies Detected!" && !anomalyHandled) {
 
-    // Update current usage text
+      pendingAnomalyData = { time: data.time, power: data.latestPower };
+
+      //pause all loops
+      anomalyHandled = true;
+      pausedOnAnomaly = true;
+      clearInterval(anomalyInterval);
+      clearInterval(temperatureInterval);
+      
+      document.querySelector(".anomaly .subtext").style.display = "none";          // hide the “You are all good for now!” line
+      
+      document.getElementById("anomaly-details").style.display = "none";  
+      document.getElementById("anomaly-details").innerText = 'Latest data not loaded yet.';     
+      
+      return; //stop further updates
+    }
+
+    if(data.status === "No Anomalies Detected!" && anomalyHandled){
+      
+    document.querySelector(".anomaly .subtext").style.display = "block";
+
+    anomalyHandled = false;
+    pendingAnomalyData = null;
+      
+    }
+
+    //update header time and date
+    document.getElementById("header-time").innerText = data.time;
+    const fixedDate = data.date.replace(/\/\d{4}$/, '/2025');    //take the incoming “DD/MM/YYYY” and force the YYYY to be 2025
+    document.getElementById("header-date").innerText = fixedDate;
+
+    document.querySelector('.last-updated')
+      .innerText = `Last updated: ${data.time}`;
+
+    //update current usage text
     document.getElementById("current-usage").innerText =
       `${data.latestPower} kW`;
 
-    // Append to chart
+    //append to chart
     const chart = window.usageChart;
     chart.data.labels.push(data.time);
     chart.data.datasets[0].data.push(data.latestPower);
@@ -114,7 +134,7 @@ async function checkAnomaly() {
       chart.data.datasets[0].data.shift();
     }
 
-    // Ensure chart labels match reported resolution
+    //ensure chart labels match reported resolution
     const reported = resolutions.find(r => r.key === data.resolution);
     if (reported) {
       if (chart.data.datasets[0].label !== reported.chartLabel) {
@@ -131,16 +151,12 @@ async function checkAnomaly() {
   }
 }
 
-// ----- Temperature Animation -----
+// ----- Target Temperature Controls and Animation -----
 
 let temperatureInterval;
 
-/**
- * Smoothly animates the current temperature reading
- * toward the target temperature, updating the estimate each step.
- */
 function animateTemperature() {
-  const currentElem = document.querySelector(".card.temp.current .value");
+  const currentElem = document.querySelector(".card.temp.current .value");        //smoothly animates the current temperature reading toward the target temperature, updating the estimate each step
   const targetElem = document.getElementById("target-temperature");
   const estimateElem = document.querySelector(".card.temp.current .estimate span");
 
@@ -170,21 +186,17 @@ function animateTemperature() {
   }, 5000);
 }
 
-/**
- * Changes the target temperature up or down by `change` degrees
- * and restarts the animation.
- */
-function updateTargetTemperature(change) {
+function updateTargetTemperature(change) {             //changes the target temperature up or down by 'change' degrees and restarts the animation
   const el = document.getElementById("target-temperature");
   let temp = parseInt(el.innerText, 10) + change;
   el.innerText = `${temp}°C`;
   animateTemperature();
 }
 
-// ----- Initialization on DOM Load -----
+// ----- DOMContentLoaded: Chart, Controls and Polling Setup -----
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize Chart.js line chart
+  //initialise Chart.js line chart
   const ctx = document.getElementById("usageGraph").getContext("2d");
   const { chartLabel, axisLabel } = resolutions[0];
 
@@ -209,18 +221,45 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Configure resolution toggle
+  //configure resolution toggle
   setupResolutionToggle();
   updateResolutionButton();
 
-  // Bind temperature buttons
+  //bind temperature buttons
   document.getElementById("increase-temp-button")
     .addEventListener("click", () => updateTargetTemperature(1));
   document.getElementById("decrease-temp-button")
     .addEventListener("click", () => updateTargetTemperature(-1));
 
-  // Start temperature animation and anomaly polling
+    document.querySelector(".details").addEventListener("click", () => {
+      if (!pausedOnAnomaly) return;                //do nothing if no anomaly
+      const details = document.getElementById("anomaly-details");
+      if (!details.innerText.startsWith('Check Your Email!')) {                //prefix and reveal the line
+        details.innerText = `Check Your Email! ${details.innerText}`;
+      }
+      details.style.display = "block";
+
+      if (pendingAnomalyData){
+
+        const{time,power} = pendingAnomalyData;
+        const chart = window.usageChart;
+        chart.data.labels.push(time);
+        chart.data.datasets[0].data.push(power);
+        if (chart.data.labels.length > 10) {
+          chart.data.labels.shift();
+          chart.data.datasets[0].data.shift();
+        }
+        chart.update();
+      }
+
+      anomalyInterval = setInterval(checkAnomaly, 1000);         //restart both loops
+      animateTemperature();
+      pausedOnAnomaly = false;
+    });    
+
+  //start temperature animation and anomaly polling
   animateTemperature();
   checkAnomaly();
-  setInterval(checkAnomaly, 1000);
+  anomalyInterval = setInterval(checkAnomaly, 1000);  //store the interval to clear it later
+  document.getElementById("anomaly-details").style.display = "none";      //hide the details paragraph until user clicks
 });

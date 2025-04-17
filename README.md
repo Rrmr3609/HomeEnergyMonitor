@@ -1,6 +1,6 @@
 # Home Energy Monitor
 
-A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household power consumption and flags anomalies in real time.
+A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household power consumption and flags anomalies in real time
 
 ---
 
@@ -21,7 +21,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 - **Anomaly detection** powered by `IsolationForest` (10% contamination)  
 - **Temperature animation** and target‑adjust controls  
 - Stubbed buttons for presets, history, tutorials  
-- Responsive, mobile‑friendly CSS layout  
+- Responsive CSS layout  
 
 ---
 
@@ -35,7 +35,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 
 ## Configuration
 
-1. Place your dataset into the project root (next to `app.py`) **or** point to it via an env var:
+1. Place dataset into the project root (next to `app.py`) **or** point to it via an env var:
 
    ```bash
    # macOS/Linux
@@ -44,7 +44,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
    # Windows PowerShell
    $env:HOUSEHOLD_DATA_PATH="C:\path\to\household_power_consumption.xlsx"
 
-2. The app will fall back to ./household_power_consumption.xlsx if HOUSEHOLD_DATA_PATH is not set.
+2. The app will fall back to ./household_power_consumption.xlsx if HOUSEHOLD_DATA_PATH is not set
 
 ---
 
@@ -91,13 +91,13 @@ json
   "resolution": "minute"
 }
 
-status - either "Anomaly Detected!" or "No Anomalies Detected!"
+status - Either "Anomaly Detected!" or "No Anomalies Detected!"
 
-latestPower - aggregated total_power for that time slice
+latestPower - Aggregated total_power for that time slice
 
-time, date - formatted timestamp
+time, date - Formatted timestamp
 
-resolution - your selected sampling frequency
+resolution - The selected sampling frequency
 
 ---
 
@@ -118,10 +118,10 @@ HomeEnergyMonitor/
     └── test_anomaly_detector.py   # Tests for your isolation forest logic
 
 
-app.py - Loads the dataset, updates time‑slice grouping, fits the IsolationForest, and serves both the static UI and the JSON API.
+app.py - Loads the dataset, updates time‑slice grouping, fits the IsolationForest, and serves both the static UI and the JSON API
 
-anomaly_detector.py - Encapsulates the data‑processing & model code (so you can import/test it separately).
+anomaly_detector.py - Encapsulates the data‑processing & model code (so you can import/test it separately)
 
-static/index.html - Bootstraps the single‑page UI; references /static/style.css and /static/main.js.
+static/index.html - Bootstraps the single‑page UI; references /static/style.css and /static/main.js
 
-tests/ - Holds your pytest files to verify server responses and anomaly‑detector functionality.
+tests/ - Holds pytest files to verify server responses and anomaly‑detector functionality

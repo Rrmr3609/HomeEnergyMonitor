@@ -1,4 +1,5 @@
-/* Global Variables */
+/* Variables and Custom Properties */
+
 :root {
   --bg-color: #121212;
   --header-bg: #1E1E1E;
@@ -10,7 +11,8 @@
   --font-family: 'Roboto Flex', sans-serif;
 }
 
-/* Global Reset and Base Styling */
+/* Reset and Base Styles */
+
 * {
   margin: 0;
   padding: 0;
@@ -25,7 +27,31 @@ html, body {
   scroll-behavior: smooth;
 }
 
-/* HEADER */
+/* Layout Helpers */
+
+main {
+  padding: 2rem;
+}
+
+.middle‑wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#target-temperature {
+  margin: 0 1rem; 
+}
+
+.temp-with-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 20px;
+}
+
+/* Header */
+
 header.top-bar {
   display: flex;
   justify-content: space-between;
@@ -43,7 +69,6 @@ header.top-bar {
   margin: 0;
   line-height: 1;
 }
-
 
 .top-bar .center h1 {
   position: relative;
@@ -139,12 +164,21 @@ header.top-bar {
   top: 14px;
 }
 
-/* MAIN Content */
-main {
-  padding: 2rem;
+#resolution-toggle {
+  margin-left: auto;
+  margin-right: 140px;
+  margin-top: 10px;
+  display: block;
+  padding: 10px 20px;  
+  border: 2px solid var(--accent-color);
+  border-radius: 8px;
+  position: relative; 
+  top: -8px; 
+  right: 2px;
 }
 
-/* Card Style for Panels */
+/* Overview Section (Current/Usage/Target) */
+
 .card {
   background-color: var(--card-bg);
   border-radius: 16px;
@@ -168,7 +202,6 @@ main {
   min-width: 200px;
 }
 
-/* Labels and Values */
 .label {
   font-size: 1.2rem;
   font-weight: 600;
@@ -187,7 +220,6 @@ main {
   color: var(--accent-color);
 }
 
-/* Icon Sizes */
 .icon {
   width: 40px;
   height: auto;
@@ -198,22 +230,6 @@ main {
   height: auto;
 }
 
-/* Temperature with Icons */
-.temp-with-icon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin-top: 20px;
-}
-
-#target-temperature {
-  /* push it away from the buttons without touching any other .value */
-  margin: 0 1rem; /* top/bottom 0, left/right 1rem – adjust as you need */
-}
-
-
-/* Target the card containing "Current Temperature" */
 .card.temp.current {
   display: flex;
   flex-direction: column;
@@ -240,7 +256,6 @@ main {
   right: 100px;
 }
 
-/* Usage Card */
 .card.usage .value {
   font-size: 1.5rem;
 }
@@ -262,14 +277,12 @@ main {
 }
 
 .target-temp-btn {
-  /* Optionally, set dimensions so they match your other control buttons: */
   width: 100px;    
   height: 100px;
-  /* If you want to adjust padding or margins differently just for these buttons, add here */
 }
 
-
 /* Anomaly Section */
+
 .anomaly {
   background-color: var(--header-bg);
   border-radius: 20px;
@@ -282,11 +295,9 @@ main {
   position: relative;
 }
 
-/* pulled in from inline index.html */
 .anomaly.detected {
   border-color: #E53935 !important;
 }
-
 
 .anomaly h2 {
   font-size: 1.5rem;
@@ -311,7 +322,8 @@ main {
   cursor: pointer;
 }
 
-/* Controls */
+/* Card Controls (Boost/Eco/Heat/Schedule) */
+
 .controls {
   display: flex;
   align-items: flex-start;
@@ -345,15 +357,13 @@ main {
   padding: 0.75rem 1.5rem;
 }
 
-/* New Controls Section Styling */
 .card-controls {
   display: flex;
   justify-content: space-between;
-  margin-top: -240px; /* This negative margin brings the entire controls section up. Adjust as needed. */
-  padding: 0 2rem;   /* Optional: adds side padding */
+  margin-top: -240px; 
+  padding: 0 2rem;   
 }
 
-/* Styles for each group of controls */
 .current-controls {
   display: flex;
   align-items: center;
@@ -364,9 +374,8 @@ main {
   border-radius: 8px;
   padding: 0.75rem 4.65rem;
   gap: 5rem;
-  /* Adjust the position of the current-controls box separately */
-  margin-left: -32px;   /* Moves it to the right */
-  margin-top: 17px;    /* Moves it down (or use a negative margin to move it up) */
+  margin-left: -32px;  
+  margin-top: 17px;   
 }
 
 .target-controls {
@@ -379,11 +388,9 @@ main {
   border-radius: 8px;
   padding: 0.75rem 3.55rem;
   gap: 5rem;
-  /* Adjust the position of the target-controls box separately */
-  margin-right: -33px;  /* Moves it to the left */
-  margin-top: 17px;    /* Moves it down */
+  margin-right: -33px; 
+  margin-top: 17px;   
 }
-
 
 .boost-button {
   height: 157px;
@@ -392,16 +399,11 @@ main {
 .heat-button {
   height: 147px;
 }
-
-/* Update button style for these controls */
 .control-button {
-  padding: 10px 20px;   /* Increase the padding so the button box is slightly bigger */
-  min-height: 50px;     /* Increase the minimum height; adjust as necessary */
-  font-size: 1rem;      /* Ensure text remains readable; adjust if needed */
+  padding: 10px 20px;   
+  min-height: 50px;     
+  font-size: 1rem;      
 }
-
-
-/* Common button styling */
 .control-button {
   background-color: #3A3A3A;
   color: #fff;
@@ -422,20 +424,8 @@ main {
   transform: scale(0.97);
 }
 
-/* NEW: Resolution Toggle Button positioning */
-#resolution-toggle {
-  margin-left: auto;
-  margin-right: 140px;
-  display: block;
-  padding: 10px 20px;  /* Increase these values to make the button bigger */
-  border: 2px solid var(--accent-color); /* Optional: adds a border to enhance the box */
-  border-radius: 8px;
-  position: relative;  /* Add this property */
-  top: -8px; 
-  right: 2px;
-}
+/* Insights and Tips Panels */
 
-/* Insights and Tips */
 .tips {
   background-color: #42AC6A !important;
   border-radius: 16px;
@@ -471,28 +461,25 @@ main {
 }
 
 .card-controls > div {
-  transition: transform 0.2s ease;    /* match .card’s transition */
+  transition: transform 0.2s ease;   
 }
 .card-controls > div:hover {
-  transform: translateY(-4px);       /* same lift distance as .card:hover */
+  transform: translateY(-4px);       
 }
 
-.middle‑wrapper {
-  display: flex;
-  flex-direction: column;
-}
+/* Action Buttons (Presets, History, Tutorial) */
 
 .action-buttons {
   display: flex;
-  justify-content: center;  /* center them horizontally */
-  align-items: center;      /* center them vertically if they wrap */
-  gap: 1rem;                /* space between buttons */
-  width: 100%;              /* take up the full line so centering works */
-  margin: 2rem auto;        /* some vertical breathing room */
+  justify-content: center;  
+  align-items: center;      
+  gap: 1rem;                
+  width: 100%;             
+  margin: 2rem auto;       
 }
 
-
 /* Footer */
+
 footer {
   background-color: var(--header-bg);
   padding: 1rem 2rem;
@@ -508,7 +495,8 @@ footer a {
   text-decoration: underline;
 }
 
-/* Responsive */
+/* Media Queries */
+
 @media (max-width: 768px) {
   .top-bar {
     flex-direction: column;
@@ -525,9 +513,7 @@ footer a {
   }
 }
   
-/* Tablet / small laptop */
 @media (max-width: 1024px) {
-  /* make overview cards two‑up instead of stretching full width */
   .overview {
     justify-content: center;
   }
@@ -537,7 +523,6 @@ footer a {
     margin-bottom: 1rem;
   }
 
-  /* stack your card‑controls vertically */
   .card-controls {
     flex-direction: column;
     padding: 0 1rem;
@@ -548,7 +533,6 @@ footer a {
     margin: 0 auto 1rem;
   }
 
-  /* tighten up the big controls section */
   .controls {
     flex-direction: column;
     gap: 1rem;
@@ -561,22 +545,17 @@ footer a {
   }
 }
 
-
-/* phablet / large phone */
 @media (max-width: 600px) {
-  /* stack all overview cards */
   .overview .card {
     flex: 1 1 100%;
     max-width: 100%;
   }
 
-  /* controls become a single column each side */
   .controls-left,
   .controls-right {
     flex-direction: column;
   }
 
-  /* collapse card controls even tighter */
   .card-controls {
     margin-top: 0;
     padding: 0;
@@ -585,13 +564,11 @@ footer a {
     margin: 0 auto 1rem;
   }
 
-  /* action‐buttons stack vertically too */
   .action‑buttons {
     flex-direction: column;
     gap: 0.5rem;
   }
 
-  /* give more breathing room on your big panels */
   .anomaly,
   .insights,
   .tips {
@@ -599,9 +576,7 @@ footer a {
   }
 }
 
-/* phones */
 @media (max-width: 480px) {
-  /* header collapses to a vertical layout */
   header.top-bar {
     flex-direction: column;
     text-align: center;
@@ -612,12 +587,10 @@ footer a {
     justify-content: center;
   }
 
-  /* bring the title to the top on small phones */
   .top-bar .center {
     order: -1;  
   }
 
-  /* tighten up padding on everything */
   main {
     padding: 1rem;
   }
@@ -625,7 +598,6 @@ footer a {
     padding: 1rem;
   }
 
-  /* scale down fonts */
   .label {
     font-size: 1rem;
   }
@@ -633,7 +605,6 @@ footer a {
     font-size: 2.5rem;
   }
 
-  /* controls spacing */
   .controls {
     gap: 0.75rem;
   }

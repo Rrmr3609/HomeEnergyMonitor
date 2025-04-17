@@ -1,17 +1,24 @@
-# Python
+#Byte‐compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.egg-info/
+*$py.class
+
+#Virtual env
 venv/
 .env
 
-# Data
-*.xlsx
-*.csv
+#Ignore dataset
+/household_power_consumption.xlsx
 
-# Node (if you ever use npm)
-node_modules/
+#Pytest cache
+.pytest_cache/
 
-# IDEs
+#IDEs and editors
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+
+#macOS finder
+.DS_Store
+
