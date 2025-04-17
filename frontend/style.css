@@ -307,6 +307,8 @@ main {
   border-radius: 6px;
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
+  color: #fff;
+  cursor: pointer;
 }
 
 /* Controls */

@@ -1,2 +1,17 @@
-# ignore Excel dataset
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+venv/
+.env
+
+# Data
 *.xlsx
+*.csv
+
+# Node (if you ever use npm)
+node_modules/
+
+# IDEs
+.vscode/
+.idea/
