@@ -3,12 +3,27 @@ from flask_cors import CORS
 import pandas as pd
 from sklearn.ensemble import IsolationForest
 import threading
+from dotenv import load_dotenv
+import os
 
-app = Flask(__name__)
+
+load_dotenv()
+
+app = Flask(
+    __name__,
+    static_folder="static",     
+    static_url_path="/static"          # ← serve them at “/…”
+)
+
 CORS(app)  # Enable CORS for all routes
 
+@app.route("/")
+def index():
+    return app.send_static_file("index.html")
+
+
 # Load the dataset once (from your Excel file)
-xlsx_path = "../household_power_consumption.xlsx"
+xlsx_path = os.getenv("HOUSEHOLD_DATA_PATH", "household_power_consumption.xlsx")
 data = pd.read_excel(xlsx_path, na_values=['?'])
 data.columns = data.columns.str.strip()
 data['datetime'] = pd.to_datetime(data['Date'].astype(str) + ' ' + data['Time'].astype(str))

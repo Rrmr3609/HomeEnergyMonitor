@@ -23,3 +23,19 @@ pip install -r requirements.txt
 
 # 3. Run
 python backend/app.py
+
+
+
+### API
+
+`GET /current_status?resolution=<minute|30min|hour|day>`
+
+**Response**:
+```json
+{
+  "status": "No Anomalies Detected!",
+  "latestPower": 1.234,
+  "time": "12:34",
+  "date": "27/07/2025",
+  "resolution": "minute"
+}

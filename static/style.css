@@ -91,7 +91,7 @@ header.top-bar {
 .battery-text {
   font-size: 1rem;
   position: relative;
-  top: 10px;
+  top: 12px;
   left: 81px;
 }
 .wifi-icon {
@@ -103,7 +103,7 @@ header.top-bar {
 }
 .connection p {
   position: relative;
-  top: 7px;
+  top: 4px;
   left: -90px;
 }
 .settings-icon {
@@ -116,7 +116,7 @@ header.top-bar {
 .settings p {
   position: relative;
   left: -54px;
-  top: 10px;
+  top: 7px;
 }
 .time-wrapper {
   display: inline-block;
@@ -125,9 +125,9 @@ header.top-bar {
 }
 .time-primary {
   display: block;
-  font-size: 2rem;
+  font-size: 2.2rem;
   position: relative;
-  top: 5px;
+  top: 3px;
   left: 50px;
 }
 .time-secondary {
@@ -349,7 +349,7 @@ main {
 .card-controls {
   display: flex;
   justify-content: space-between;
-  margin-top: -235px; /* This negative margin brings the entire controls section up. Adjust as needed. */
+  margin-top: -240px; /* This negative margin brings the entire controls section up. Adjust as needed. */
   padding: 0 2rem;   /* Optional: adds side padding */
 }
 
@@ -362,7 +362,7 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
   border: 2px solid #1E1E1E;
   border-radius: 8px;
-  padding: 0.75rem 4.85rem;
+  padding: 0.75rem 4.65rem;
   gap: 5rem;
   /* Adjust the position of the current-controls box separately */
   margin-left: -32px;   /* Moves it to the right */
@@ -377,7 +377,7 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
   border: 2px solid #1E1E1E;
   border-radius: 8px;
-  padding: 0.75rem 3.75rem;
+  padding: 0.75rem 3.55rem;
   gap: 5rem;
   /* Adjust the position of the target-controls box separately */
   margin-right: -33px;  /* Moves it to the left */
