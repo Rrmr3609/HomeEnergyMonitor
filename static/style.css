@@ -401,6 +401,12 @@ header.top-bar {
   margin-bottom: 2rem;
   color: #FFFFFF;
 }
+
+.tips .tip {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
 .insights, .tips {
   background-color: var(--header-bg);
   border-radius: 16px;
@@ -417,7 +423,7 @@ header.top-bar {
   justify-content: center;
   gap: 0.5rem;
 }
-.insights p, .tips p {
+.insights p{
   font-size: 1rem;
   margin-bottom: 0.75rem;
 }

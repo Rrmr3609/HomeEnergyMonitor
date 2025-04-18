@@ -1,132 +1,158 @@
+# app.py
+import os
+import threading
+import pandas as pd
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-import pandas as pd
-from sklearn.ensemble import IsolationForest
-import threading
-from dotenv import load_dotenv
-import os
+from anomaly_detector import load_and_preprocess, group_power, fit_detector
 
-load_dotenv()
+# load .env if available
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 app = Flask(
     __name__,
-    static_folder="static",     
-    static_url_path="/static"        
+    static_folder="static",
+    static_url_path="/static"
 )
+CORS(app)
 
-CORS(app) #enable CORS for all routes
+# Configuration
+xlsx_path = os.getenv("HOUSEHOLD_DATA_PATH", "household_power_consumption.xlsx")
+data = load_and_preprocess(xlsx_path)
+
+current_resolution = 'minute'
+grouped_data = group_power(data, current_resolution)
+model = fit_detector(grouped_data)
+
+current_index = 0
+index_lock = threading.Lock()
 
 @app.route("/")
 def index():
     return app.send_static_file("index.html")
 
-#load the dataset once
-xlsx_path = os.getenv("HOUSEHOLD_DATA_PATH", "household_power_consumption.xlsx")
-data = pd.read_excel(xlsx_path, na_values=['?'])
-data.columns = data.columns.str.strip()
-data['datetime'] = pd.to_datetime(data['Date'].astype(str) + ' ' + data['Time'].astype(str))
-
-#convert energy measurement columns to numeric
-numeric_cols = ['Global_active_power', 'Global_reactive_power', 'Voltage', 
-                'Global_intensity', 'Sub_metering_1', 'Sub_metering_2', 'Sub_metering_3']
-for col in numeric_cols:
-    data[col] = pd.to_numeric(data[col], errors='coerce')
-
-#compute two measures of power and average them
-data['recorded_power'] = data['Global_active_power'] + data['Global_reactive_power']
-data['calc_power'] = (data['Voltage'] * data['Global_intensity']) / 1000.0
-data['total_power'] = (data['recorded_power'] + data['calc_power']) / 2.0
-
-#global variables for dynamic grouping
-resolution_to_freq = {
-    "minute": "T",    
-    "30min": "30T",   
-    "hour": "H",      
-    "day": "D"        
-}
-current_resolution = "minute"  
-grouped_data = None            #store the aggregated DataFrame
-current_model = None           #IsolationForest model fitted on grouped_data
-current_index = 0              #pointer into the grouped data for simulation
-index_lock = threading.Lock()
-
-def update_grouping(resolution):
-    """Update the grouped data and model based on the given resolution without resetting to the start if possible."""
-    global grouped_data, current_model, current_index, current_resolution
-    
-    #save current grouping timestamp
-    last_timestamp = None
-    if grouped_data is not None and current_index > 0:
-        last_timestamp = grouped_data.iloc[current_index - 1]['group']
-    
-    freq = resolution_to_freq.get(resolution, "T")    #determine frequency for grouping
-    #create a new grouping column based on the chosen frequency
-    data['group'] = data['datetime'].dt.floor(freq)
-    new_grouped = data.groupby('group')['total_power'].sum().reset_index()
-    new_grouped = new_grouped.sort_values(by='group').reset_index(drop=True)
-    grouped_data = new_grouped
-
-    #fit IsolationForest on the new grouped data
-    current_model = IsolationForest(contamination=0.10, random_state=42)
-    current_model.fit(grouped_data[['total_power']])
-    
-    #try to maintain the pointer by finding the first record with a group timestamp >= last_timestamp
-    if last_timestamp is not None:
-        indices = grouped_data[grouped_data['group'] >= last_timestamp].index
-        if len(indices) > 0:
-            current_index = int(indices[0])
-        else:
-            current_index = 0
-    else:
-        current_index = 0
-    
-    current_resolution = resolution
-    print(f"Grouping updated to {resolution} ({freq}). Total groups: {len(grouped_data)}")
-
-update_grouping("minute")   #initialise with the default resolution
-
 @app.route("/current_status", methods=["GET"])
 def current_status():
-    global current_index
-    #check if a resolution query parameter is provided and if it differs from the current setting
+    global current_resolution, grouped_data, model, current_index
+
     requested_resolution = request.args.get("resolution")
     if requested_resolution and requested_resolution != current_resolution:
-        update_grouping(requested_resolution)
-    
+        last_ts = None
+        if grouped_data is not None and 0 <= current_index - 1 < len(grouped_data):
+            last_ts = grouped_data.iloc[current_index - 1]['group']
+
+        current_resolution = requested_resolution
+        grouped_data = group_power(data, current_resolution)
+        model = fit_detector(grouped_data)
+
+        if last_ts is not None:
+            inds = grouped_data[grouped_data['group'] >= last_ts].index
+            current_index = int(inds[0]) if len(inds) > 0 else 0
+        else:
+            current_index = 0
+
     with index_lock:
-        #loop back to the beginning if end is reached
         if current_index >= len(grouped_data):
             current_index = 0
-        
-        #get the current grouped record
+
         row = grouped_data.iloc[current_index]
-        current_group = row['group']
-        current_total = row['total_power']
-        
-        #check anomaly status using IsolationForest
-        prediction = current_model.predict(pd.DataFrame([[current_total]], columns=['total_power']))
-        anomaly = bool(prediction[0] == -1)
-        
-        #format time and date based on the current grouping timestamp
-        time_str = current_group.strftime("%H:%M")
-        date_str = current_group.strftime("%d/%m/%Y")
-        
+        timestamp = row['group']
+        power = row['total_power']
+
+        df = pd.DataFrame({'total_power': [power]})
+        pred = model.predict(df)[0]
+        anomaly = bool(pred == -1)
+
+        time_str = timestamp.strftime("%H:%M")
+        date_str = timestamp.strftime("%d/%m/%Y")
+
         response = {
             "anomalyFound": anomaly,
-            "hour": current_group.strftime("%Y-%m-%d %H:%M:%S"),  #for backward compatibility
-            "time": time_str,
-            "date": date_str,
-            "latestPower": round(current_total, 3),
-            "status": "Anomaly Detected!" if anomaly else "No Anomalies Detected!",
-            "borderColor": "red" if anomaly else "green",
-            "resolution": current_resolution  #return current resolution to let the frontend update labels
+            "time":         time_str,
+            "date":         date_str,
+            "latestPower":  round(power, 3),
+            "status":       "Anomaly Detected!" if anomaly else "No Anomalies Detected!",
+            "resolution":   current_resolution
         }
-        current_index += 1  #move pointer to the next record for subsequent requests
+
+        current_index += 1
+
     return jsonify(response)
 
 @app.route("/anomaly", methods=["GET"])
 def anomaly_endpoint():
     return current_status()
+
+@app.route("/insights", methods=["GET"])
+def insights():
+    global grouped_data, current_index
+    # snapshot the index under lock, in case it’s advancing concurrently
+    with index_lock:
+        idx = current_index
+
+    # Insight 2: last window delta (needs at least 2 points)
+    if idx >= 2:
+        last_val = grouped_data['total_power'].iat[idx - 1]
+        prev_val = grouped_data['total_power'].iat[idx - 2]
+        deltaKw  = round(last_val - prev_val, 3)
+    else:
+        deltaKw = 0.0
+
+    # Insight 1: last 7 vs previous 7 (needs at least 14 points)
+    if idx >= 14:
+        last7 = grouped_data['total_power'].iloc[idx - 7 : idx].sum()
+        prev7 = grouped_data['total_power'].iloc[idx - 14: idx - 7].sum()
+        sevenPctChange = round(((last7 - prev7) / prev7) * 100, 1) if prev7 else 0.0
+    else:
+        sevenPctChange = 0.0
+
+    return jsonify({
+        "sevenPctChange": sevenPctChange,
+        "deltaKw":        deltaKw
+    })
+
+@app.route("/tips", methods=["GET"])
+def tips():
+    # read in the two insight values the client just passed
+    try:
+        pct = float(request.args.get("sevenPctChange", 0))
+        dk  = float(request.args.get("deltaKw",  0))
+    except ValueError:
+        pct, dk = 0.0, 0.0
+
+    tips = []
+
+    # if they got _better_ over last 7
+    if pct < 0:
+        tips.append("Nice work cutting your average use by "
+                    f"{abs(pct):.1f}% — keep it up by scheduling your heating off 30 minutes earlier each evening.")
+
+    else:
+        tips.append("Your average use rose by "
+                    f"{pct:.1f}% — try lowering your thermostat by 1°C during off‑peak hours.")
+
+    # if current window demand jumped
+    if dk > 0.5:
+        tips.append("We saw a spike this period. Check if any high‑draw appliances (e.g. dryer) are still running.")
+
+    elif dk < -0.2:
+        tips.append("Good job smoothing out that spike — consider running washing/dishwashers in eco‑mode to save even more.")
+
+    else:
+        tips.append("Your usage held steady. Unused devices can still draw phantom power—try unplugging what you’re not using.")
+
+    # always at least two
+    if len(tips) < 2:
+        tips.append("Try turning off any devices that are not currently in use.")
+
+    return jsonify({"tips": tips})
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
