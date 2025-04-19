@@ -1,24 +1,34 @@
-#Byte‐compiled / optimized / DLL files
+#any byte‑compiled / optimised / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-#Virtual env
+#virtual environments
 venv/
-.env
+.venv/
+env/
+.env/
 
-#Ignore dataset
+#flask instance folder
+instance/
+
+#dotenv environment files
+.env
+.env.*
+
+#ignore dataset
 /household_power_consumption.xlsx
 
-#Pytest cache
+#pytest
 .pytest_cache/
+*.cover
+.coverage
+coverage.xml
+htmlcov/
 
-#IDEs and editors
+#IDE
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
-
-#macOS finder
-.DS_Store
 

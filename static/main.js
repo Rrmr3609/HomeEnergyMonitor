@@ -1,4 +1,5 @@
 // ----- Available Resolutions Configuration -----
+
 const resolutions = [
   {
     key: "minute",
@@ -35,49 +36,62 @@ let anomalyInterval;
 
 const getCurrentResolution = () => resolutions[currentResolutionIndex];
 
-// ——————— GLOBAL: Insights Updater ———————
+function setupResolutionToggle() {
+  const btn = document.getElementById("resolution-toggle");
+  btn.addEventListener("click", () => {
+    //cycle resolution
+    currentResolutionIndex = (currentResolutionIndex + 1) % resolutions.length;
+    updateResolutionButton();
+    resetChartData();
 
-// session‑based Insight 1
-function updateSessionInsight() {
+    //immediately fetch & plot the current point at the exact "now" timestamp
+    clearInterval(anomalyInterval);
+    checkAnomaly();
+    anomalyInterval = setInterval(checkAnomaly, 1000);
+  });
+}
+
+function updateResolutionButton() {
+  const { buttonLabel } = getCurrentResolution();
+  document.getElementById("resolution-toggle").innerText =
+    `Current Usage - ${buttonLabel}`;
+}
+
+// ---- GLOBAL: Insights Updater ----
+
+function updateSessionInsight() {             //session based Insight 1
   const arr = window.usageChart.data.datasets[0].data;
   if (arr.length < 14) {
     document.getElementById("insight-1").innerText = "Gathering more data…";
     return;
   }
-  const last7 = arr.slice(-7).reduce((a,b) => a + b, 0);
-  const prev7 = arr.slice(-14, -7).reduce((a,b) => a + b, 0) || 1;
+  const last7 = arr.slice(-7).reduce((a, b) => a + b, 0);
+  const prev7 = arr.slice(-14, -7).reduce((a, b) => a + b, 0) || 1;
   const pct   = (((last7 - prev7) / prev7) * 100).toFixed(1);
   const dir   = pct >= 0 ? "higher" : "lower";
   document.getElementById("insight-1").innerText =
     `Your average usage over the last 7 periods was ${Math.abs(pct)}% ${dir} than the 7 before.`;
 }
 
-// server‑driven Insight 2
-async function updateInsights() {
+async function updateInsights() {          //server-driven Insight 2
   try {
     const { key: resolution } = getCurrentResolution();
     const resp = await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" });
     const { sevenPctChange, deltaKw } = await resp.json();
 
-    // Insight 1: last‑7‑bucket % change
-    const pct  = Math.abs(sevenPctChange).toFixed(1);
-    const dir1 = sevenPctChange >= 0 ? "higher" : "lower";
-    document.getElementById("insight-1").innerText =
-      `Your average usage over the last 7 periods was ${pct}% ${dir1} than the 7 before that.`;
-
-    // Insight 2: last‑window kW delta
+    //Insight 2 - last window kW delta
     const kw   = Math.abs(deltaKw).toFixed(3);
     const dir2 = deltaKw >= 0 ? "higher" : "lower";
     document.getElementById("insight-2").innerText =
-      `Your current total energy usage is ${kw} kW ${dir2} than the previous window.`;
+      `Your current window's total energy usage is ${kw} kW ${dir2} than the previous window.`;
 
-    // Dynamic footer
+    //dyanmic footer
     const footerEl = document.querySelector(".insights .success");
     if (sevenPctChange < 0 && deltaKw < 0) {
       footerEl.innerText = "Well done!";
       footerEl.style.color = "var(--success-color)";
     } else {
-      footerEl.innerText = "You are not improving your electricity consumption!";
+      footerEl.innerText = "You are not improving your electricity usage!";
       footerEl.style.color = "#FFA000";
     }
 
@@ -86,24 +100,22 @@ async function updateInsights() {
   }
 }
 
-// ————— Tips Updater —————
-
-// ————— Tips Updater —————
+// ---- Tips Updater ----
 async function updateTips() {
   try {
-    // 1) fetch the latest insights
+    //fetch the latest insights
     const { key: resolution } = getCurrentResolution();
     const insResp = await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" });
     const { sevenPctChange, deltaKw } = await insResp.json();
 
-    // 2) now fetch the tailored tips
+    //fetch the tailored tips
     const tipsResp = await fetch(
       `/tips?sevenPctChange=${sevenPctChange}&deltaKw=${deltaKw}`,
       { cache: "no-cache" }
     );
     const { tips } = await tipsResp.json();
 
-    // 3) render
+    //render
     const tipsSection = document.querySelector(".tips");
     tipsSection.querySelectorAll("p.tip").forEach(el => el.remove());
     tips.forEach(text => {
@@ -117,49 +129,8 @@ async function updateTips() {
   }
 }
 
-
-// ————————————————————
-
-
-// ————————————————————————————————
-
-function updateResolutionButton() {
-  const { buttonLabel } = getCurrentResolution();
-  document.getElementById("resolution-toggle").innerText =
-    `Current Usage - ${buttonLabel}`;
-}
-
-function resetChartData() {
-  const { chartLabel, axisLabel } = getCurrentResolution();
-  const chart = window.usageChart;
-
-  chart.data.labels = [];
-  chart.data.datasets[0].data = [];
-  chart.data.datasets[0].label = chartLabel;
-  chart.options.scales.x.title.text = axisLabel;
-  chart.update();
-  // after clearing, refresh both insights
-  updateInsights();
-  updateTips();
-  updateSessionInsight();
-}
-
-function setupResolutionToggle() {
-  const btn = document.getElementById("resolution-toggle");
-  btn.addEventListener("click", () => {
-    // cycle resolution
-    currentResolutionIndex = (currentResolutionIndex + 1) % resolutions.length;
-    updateResolutionButton();
-    resetChartData();
-
-    // immediately fetch & plot the current point at the exact "now" timestamp
-    clearInterval(anomalyInterval);
-    checkAnomaly();
-    anomalyInterval = setInterval(checkAnomaly, 1000);
-  });
-}
-
 // ----- Anomaly Polling and UI Updates -----
+
 async function checkAnomaly() {
   if (pausedOnAnomaly) return;
 
@@ -171,22 +142,22 @@ async function checkAnomaly() {
     );
     const data = await resp.json();
 
-    // normalize date/time
+    //normalise date/time
     const fixedDate = data.date.replace(/\/\d{4}$/, '/2025');
-    const time      = data.time;
-    const power     = data.latestPower;
+    const time = data.time;
+    const power = data.latestPower;
 
-    // update anomaly status & border
+    //update anomaly status and border
     document.getElementById("anomaly-status").innerText = data.status;
     document.getElementById("anomaly-box")
       .classList.toggle("detected", data.status !== "No Anomalies Detected!");
 
-    // show/hide the "You are all good" subtext
+    //show/hide the "You are all good" subtext
     const sub = document.querySelector(".anomaly .subtext");
     sub.style.display = data.status === "No Anomalies Detected!"
       ? "block" : "none";
 
-    // always update header, current usage & chart
+    //always update header, current usage & chart
     document.getElementById("header-time").innerText   = time;
     document.getElementById("header-date").innerText   = fixedDate;
     document.querySelector(".last-updated").innerText  = `Last updated: ${time}`;
@@ -200,7 +171,7 @@ async function checkAnomaly() {
       chart.data.datasets[0].data.shift();
     }
 
-    // sync chart labels/resolution
+    //sync chart labels/resolution
     const reported = resolutions.find(r => r.key === data.resolution);
     if (reported) {
       chart.data.datasets[0].label      = reported.chartLabel;
@@ -208,12 +179,12 @@ async function checkAnomaly() {
     }
     chart.update();
 
-    // update insights *after* the chart has new data
+    //update insights after the chart has new data
     updateInsights();
     updateTips();
     updateSessionInsight();
 
-    // stash anomaly data and pause on first detection
+    //stash anomaly data and pause on first detection
     if (data.status !== "No Anomalies Detected!" && !anomalyHandled) {
       pendingAnomalyData = { date: fixedDate, time, power };
       anomalyHandled     = true;
@@ -224,7 +195,7 @@ async function checkAnomaly() {
       return;
     }
 
-    // if anomaly cleared, resume normal operation
+    //if anomaly cleared, resume normal operation
     if (data.status === "No Anomalies Detected!" && anomalyHandled) {
       anomalyHandled     = false;
       pendingAnomalyData = null;
@@ -235,7 +206,23 @@ async function checkAnomaly() {
   }
 }
 
+function resetChartData() {
+  const { chartLabel, axisLabel } = getCurrentResolution();
+  const chart = window.usageChart;
+
+  chart.data.labels = [];
+  chart.data.datasets[0].data = [];
+  chart.data.datasets[0].label = chartLabel;
+  chart.options.scales.x.title.text = axisLabel;
+  chart.update();
+  //after clearing, refresh both insights
+  updateInsights();
+  updateTips();
+  updateSessionInsight();
+}
+
 // ----- Target Temperature Controls and Animation -----
+
 let temperatureInterval;
 
 function animateTemperature() {
@@ -270,15 +257,16 @@ function animateTemperature() {
 }
 
 function updateTargetTemperature(change) {
-  const el   = document.getElementById("target-temperature");
-  let temp   = parseInt(el.innerText, 10) + change;
+  const el = document.getElementById("target-temperature");
+  let temp = parseInt(el.innerText, 10) + change;
   el.innerText = `${temp}°C`;
   animateTemperature();
 }
 
 // ----- DOMContentLoaded: Chart, Controls and Polling Setup -----
+
 document.addEventListener("DOMContentLoaded", () => {
-  // initialise Chart.js line chart
+  //initialise Chart.js line chart
   const ctx = document.getElementById("usageGraph").getContext("2d");
   const { chartLabel, axisLabel } = resolutions[0];
 
@@ -303,34 +291,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // configure resolution toggle
+  //configure resolution toggle
   setupResolutionToggle();
   updateResolutionButton();
 
-  // bind temperature buttons
+  //bind temperature buttons
   document.getElementById("increase-temp-button")
     .addEventListener("click", () => updateTargetTemperature(1));
   document.getElementById("decrease-temp-button")
     .addEventListener("click", () => updateTargetTemperature(-1));
 
-  // anomaly details click handler
+  //anomaly details click handler
   document.querySelector(".details").addEventListener("click", () => {
     if (!pausedOnAnomaly || !pendingAnomalyData) return;
 
     const { date, time, power } = pendingAnomalyData;
     const detEl = document.getElementById("anomaly-details");
 
-    // show the anomaly banner and details
+    //show the anomaly banner and details
     detEl.innerText     = `Check Your Phone! Date: ${date} | Time: ${time} | Power: ${power} kW`;
     detEl.style.display = "block";
 
-    // immediately inject the stored point
+    //immediately inject the stored point
     document.getElementById("header-time").innerText    = time;
     document.getElementById("header-date").innerText    = date;
     document.querySelector(".last-updated").innerText   = `Last updated: ${time}`;
     document.getElementById("current-usage").innerText  = `${power} kW`;
 
-    // after 5s, hide details & resume
+    //after 5s, hide details & resume
     setTimeout(() => {
       detEl.style.display       = "none";
       pendingAnomalyData        = null;
@@ -341,13 +329,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   });
 
-  // start everything
+  //start everything
   animateTemperature();
   checkAnomaly();
   anomalyInterval = setInterval(checkAnomaly, 1000);
   document.getElementById("anomaly-details").style.display = "none";
 
-  // initial insights
+  //initial insights
   updateInsights();
   updateTips();
   updateSessionInsight();
