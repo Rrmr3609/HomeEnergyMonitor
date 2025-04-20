@@ -391,6 +391,31 @@ header.top-bar {
   transform: scale(0.97);
 }
 
+/* Tutorial */
+
+.introjs-tooltip, 
+.introjs-helperLayer .introjs-tooltip {
+  background: #2b2b2b !important;       
+  color: #f1f1f1 !important;            
+  border: 2px solid #FF9800 !important; 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6) !important;
+}
+
+.introjs-tooltip .introjs-tooltiptext,
+.introjs-tooltip .introjs-title {
+  color: #f1f1f1 !important;
+}
+
+.introjs-button {
+  background: #FF9800 !important;
+  color: #2b2b2b !important;
+  border: none !important;
+}
+.introjs-button:hover {
+  background: #e08800 !important;
+}
+
+
 /* Insights and Tips Panels */
 
 .tips {

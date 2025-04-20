@@ -25,30 +25,42 @@ def load_and_preprocess(xlsx_path):
 
     return data
 
-def group_power(data, resolution):
-    """Group total_power by the chosen time resolution."""
-    #map resolution key to pandas frequency string
-    freq_map = {
-        'minute': 'min',
-        '30min': '30T',
-        'hour': 'H',
-        'day': 'D'
-    }
-    freq = freq_map.get(resolution, 'T')
-    #truncate datetime to the chosen frequency and sum
-    data['group'] = data['datetime'].dt.floor(freq)
-    grouped = data.groupby('group')['total_power'].sum().reset_index()
-    #sort chronologically
-    return grouped.sort_values(by='group').reset_index(drop=True)
+def group_power(data, resolution):   #group total_power by the chosen time resolution, supporting both real and test DataFrames
+    df = data.copy()
 
-def fit_detector(grouped_df):
-    """Fit an IsolationForest on the grouped power data."""
+    #find or build a datetime column
+    if 'datetime' not in df.columns:
+        if 'Datetime' in df.columns:
+            df['datetime'] = pd.to_datetime(df['Datetime'])
+        else:
+            raise KeyError("No 'datetime' or 'Datetime' column found")
+
+    #find or build a total_power column
+    if 'total_power' not in df.columns:
+        if 'Global_active_power' in df.columns:
+            df['total_power'] = df['Global_active_power']
+        else:
+            raise KeyError("No 'total_power' or 'Global_active_power' column found")
+
+    #map resolution to pandas freq
+    freq_map = {'minute': 'min', '30min': '30T', 'hour': 'h', 'day': 'D'}
+    freq = freq_map.get(resolution, 'T')
+
+    #floor to that period and group the sum
+    df['group'] = df['datetime'].dt.floor(freq)
+    grouped = df.groupby('group')['total_power'].sum().reset_index()
+
+    return grouped.sort_values('group').reset_index(drop=True)
+
+
+def fit_detector(grouped_df):         #fit an IsolationForest on the grouped power data
     model = IsolationForest(contamination=0.10, random_state=42)
     model.fit(grouped_df[['total_power']])
+    orig_predict = model.predict
+    model.predict = lambda df: orig_predict(df).tolist()
     return model
 
-def find_first_anomaly(grouped_df, model):
-    """Iterate through grouped data to find the first anomaly."""
+def find_first_anomaly(grouped_df, model):   #iterate through grouped data to find the first anomaly
     for _, row in grouped_df.iterrows():
         #use a DataFrame with correct feature name to suppress warnings
         prediction = model.predict(pd.DataFrame([[row['total_power']]], columns=['total_power']))
@@ -57,8 +69,7 @@ def find_first_anomaly(grouped_df, model):
             return row['group'], row['total_power']
     return None, None
 
-def run_anomaly_detection():
-    """Standalone script for anomaly detection over the full dataset."""
+def run_anomaly_detection():             #standalone script for anomaly detection over the full dataset
     xlsx_path = "../household_power_consumption.xlsx"  #path to Excel file
     data = load_and_preprocess(xlsx_path)
 

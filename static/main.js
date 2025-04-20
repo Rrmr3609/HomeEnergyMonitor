@@ -1,6 +1,6 @@
 // ----- Available Resolutions Configuration -----
 
-const resolutions = [
+const resolutions = [   //defines the different time resolutions for data aggregation and respective UI labels
   {
     key: "minute",
     buttonLabel: "Per Minute",
@@ -27,40 +27,44 @@ const resolutions = [
   },
 ];
 
-let currentResolutionIndex = 0;
+let currentResolutionIndex = 0; //tracks the currently selected resolution index in the resolutions array
 
+//state variables for handling anomalies and insights
 let anomalyHandled     = false;
 let pendingAnomalyData = null;
 let pausedOnAnomaly    = false;
 let anomalyInterval;
+let insight1Data = [];
 
+//helper to retrieve the current resolution object
 const getCurrentResolution = () => resolutions[currentResolutionIndex];
 
-function setupResolutionToggle() {
+function setupResolutionToggle() {  //sets up the resolution toggle button to cycle through available resolutions
   const btn = document.getElementById("resolution-toggle");
   btn.addEventListener("click", () => {
-    //cycle resolution
+    //cycle to next resolution
     currentResolutionIndex = (currentResolutionIndex + 1) % resolutions.length;
     updateResolutionButton();
     resetChartData();
 
-    //immediately fetch & plot the current point at the exact "now" timestamp
+    //immediately fetch and plot the current point at the exact "now" timestamp
     clearInterval(anomalyInterval);
     checkAnomaly();
     anomalyInterval = setInterval(checkAnomaly, 1000);
   });
 }
 
-function updateResolutionButton() {
+function updateResolutionButton() {   //updates the resolution toggle button label based on the current resolution
   const { buttonLabel } = getCurrentResolution();
   document.getElementById("resolution-toggle").innerText =
     `Current Usage - ${buttonLabel}`;
 }
 
-// ---- GLOBAL: Insights Updater ----
 
-function updateSessionInsight() {             //session based Insight 1
-  const arr = window.usageChart.data.datasets[0].data;
+// ---- Insights Updaters ----
+
+function updateSessionInsight() {   //updates the session based insight (Insight 1) comparing last 7 periods vs previous 7
+  const arr = insight1Data;
   if (arr.length < 14) {
     document.getElementById("insight-1").innerText = "Gathering more data…";
     return;
@@ -73,7 +77,7 @@ function updateSessionInsight() {             //session based Insight 1
     `Your average usage over the last 7 periods was ${Math.abs(pct)}% ${dir} than the 7 before.`;
 }
 
-async function updateInsights() {          //server-driven Insight 2
+async function updateInsights() {    //fetches server driven insight (Insight 2) and updates the UI accordingly
   try {
     const { key: resolution } = getCurrentResolution();
     const resp = await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" });
@@ -85,7 +89,7 @@ async function updateInsights() {          //server-driven Insight 2
     document.getElementById("insight-2").innerText =
       `Your current window's total energy usage is ${kw} kW ${dir2} than the previous window.`;
 
-    //dyanmic footer
+    //dynamic footer message based on performance
     const footerEl = document.querySelector(".insights .success");
     if (sevenPctChange < 0 && deltaKw < 0) {
       footerEl.innerText = "Well done!";
@@ -100,38 +104,56 @@ async function updateInsights() {          //server-driven Insight 2
   }
 }
 
-// ---- Tips Updater ----
-async function updateTips() {
-  try {
-    //fetch the latest insights
-    const { key: resolution } = getCurrentResolution();
-    const insResp = await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" });
-    const { sevenPctChange, deltaKw } = await insResp.json();
 
-    //fetch the tailored tips
-    const tipsResp = await fetch(
-      `/tips?sevenPctChange=${sevenPctChange}&deltaKw=${deltaKw}`,
+// ---- Tips Updater ----
+
+async function updateTips() {    //updates the personalised tips section and shows placeholders until enough data, then fetches server tips
+  const tipsEls = document.querySelectorAll(".tips p.tip");
+  if (tipsEls.length < 2) return; //guard
+
+  //if insufficient data, show default gathering data tips
+  if (insight1Data.length < 14) {
+    tipsEls[0].innerText =
+      "Gathering data on your usage — more detailed insights will appear once we have more readings.";
+    tipsEls[1].innerText =
+      "Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you’re not using.";
+    return;
+  }
+
+  //otherwise fetch server generated tips
+  try {
+    const { key: resolution } = getCurrentResolution();
+    const resp = await fetch(
+      `/tips?sevenPctChange=${encodeURIComponent(
+        (await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" })
+          .then(r => r.json())
+          .then(j => j.sevenPctChange)
+        )
+      )}&deltaKw=${encodeURIComponent(
+        (await fetch(`/insights?resolution=${resolution}`, { cache: "no-cache" })
+          .then(r => r.json())
+          .then(j => j.deltaKw)
+        )
+      )}`,
       { cache: "no-cache" }
     );
-    const { tips } = await tipsResp.json();
+    const { tips } = await resp.json();
 
-    //render
-    const tipsSection = document.querySelector(".tips");
-    tipsSection.querySelectorAll("p.tip").forEach(el => el.remove());
-    tips.forEach(text => {
-      const p = document.createElement("p");
-      p.className = "tip";
-      p.innerText  = text;
-      tipsSection.appendChild(p);
-    });
+    //populate the two <p.tip> elements with fetched tips
+    tipsEls[0].innerText = tips[0] || "";
+    tipsEls[1].innerText = tips[1] || "";
   } catch (err) {
     console.error("Error fetching tips:", err);
+    //fallback in case of error
+    tipsEls[0].innerText = "Unable to load tips right now.";
+    tipsEls[1].innerText = "";
   }
 }
 
+
 // ----- Anomaly Polling and UI Updates -----
 
-async function checkAnomaly() {
+async function checkAnomaly() {    //periodically polls for anomaly status, updates the chart and UI, and handles anomaly pauses
   if (pausedOnAnomaly) return;
 
   try {
@@ -142,22 +164,21 @@ async function checkAnomaly() {
     );
     const data = await resp.json();
 
-    //normalise date/time
+    //normalise and extract date/time/power
     const fixedDate = data.date.replace(/\/\d{4}$/, '/2025');
     const time = data.time;
     const power = data.latestPower;
 
-    //update anomaly status and border
+    //update anomaly status text and highlight box if detected
     document.getElementById("anomaly-status").innerText = data.status;
     document.getElementById("anomaly-box")
       .classList.toggle("detected", data.status !== "No Anomalies Detected!");
 
-    //show/hide the "You are all good" subtext
+    //show or hide the "all good" subtext
     const sub = document.querySelector(".anomaly .subtext");
-    sub.style.display = data.status === "No Anomalies Detected!"
-      ? "block" : "none";
+    sub.style.display = data.status === "No Anomalies Detected!" ? "block" : "none";
 
-    //always update header, current usage & chart
+    //update headers, usage text, and chart
     document.getElementById("header-time").innerText   = time;
     document.getElementById("header-date").innerText   = fixedDate;
     document.querySelector(".last-updated").innerText  = `Last updated: ${time}`;
@@ -166,12 +187,13 @@ async function checkAnomaly() {
     const chart = window.usageChart;
     chart.data.labels.push(time);
     chart.data.datasets[0].data.push(power);
+    insight1Data.push(power);
     if (chart.data.labels.length > 10) {
       chart.data.labels.shift();
       chart.data.datasets[0].data.shift();
     }
 
-    //sync chart labels/resolution
+    //sync chart labels if resolution changed on the server side
     const reported = resolutions.find(r => r.key === data.resolution);
     if (reported) {
       chart.data.datasets[0].label      = reported.chartLabel;
@@ -179,12 +201,12 @@ async function checkAnomaly() {
     }
     chart.update();
 
-    //update insights after the chart has new data
+    //update insights based on new data
     updateInsights();
     updateTips();
     updateSessionInsight();
 
-    //stash anomaly data and pause on first detection
+    //on first anomaly detection, pause updates and store data for detail view
     if (data.status !== "No Anomalies Detected!" && !anomalyHandled) {
       pendingAnomalyData = { date: fixedDate, time, power };
       anomalyHandled     = true;
@@ -195,7 +217,7 @@ async function checkAnomaly() {
       return;
     }
 
-    //if anomaly cleared, resume normal operation
+    //if anomaly cleared after pause, resume normal operation
     if (data.status === "No Anomalies Detected!" && anomalyHandled) {
       anomalyHandled     = false;
       pendingAnomalyData = null;
@@ -206,7 +228,7 @@ async function checkAnomaly() {
   }
 }
 
-function resetChartData() {
+function resetChartData() {    //resets the chart data and insights when resolution changes
   const { chartLabel, axisLabel } = getCurrentResolution();
   const chart = window.usageChart;
 
@@ -215,17 +237,20 @@ function resetChartData() {
   chart.data.datasets[0].label = chartLabel;
   chart.options.scales.x.title.text = axisLabel;
   chart.update();
-  //after clearing, refresh both insights
+  insight1Data = [];
+
+  //refresh insights with cleared data
   updateInsights();
   updateTips();
   updateSessionInsight();
 }
 
+
 // ----- Target Temperature Controls and Animation -----
 
 let temperatureInterval;
 
-function animateTemperature() {
+function animateTemperature() {   //animates the current temperature towards the target, updating the estimate
   const currentElem  = document.querySelector(".card.temp.current .value");
   const targetElem   = document.getElementById("target-temperature");
   const estimateElem = document.querySelector(".card.temp.current .estimate span");
@@ -256,17 +281,18 @@ function animateTemperature() {
   }, 5000);
 }
 
-function updateTargetTemperature(change) {
+function updateTargetTemperature(change) {   //adjusts the target temperature by the given change (+/-) and animates again
   const el = document.getElementById("target-temperature");
   let temp = parseInt(el.innerText, 10) + change;
   el.innerText = `${temp}°C`;
   animateTemperature();
 }
 
-// ----- DOMContentLoaded: Chart, Controls and Polling Setup -----
+
+// ----- DOMContentLoaded - Chart, Controls and Polling Setup -----
 
 document.addEventListener("DOMContentLoaded", () => {
-  //initialise Chart.js line chart
+  //initialise Chart.js line chart with default resolution labels
   const ctx = document.getElementById("usageGraph").getContext("2d");
   const { chartLabel, axisLabel } = resolutions[0];
 
@@ -291,17 +317,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  //configure resolution toggle
+  //configure resolution toggle and initialise button text
   setupResolutionToggle();
   updateResolutionButton();
 
-  //bind temperature buttons
+  //bind increase/decrease temperature buttons
   document.getElementById("increase-temp-button")
     .addEventListener("click", () => updateTargetTemperature(1));
   document.getElementById("decrease-temp-button")
     .addEventListener("click", () => updateTargetTemperature(-1));
 
-  //anomaly details click handler
+  //anomaly details click handler, shows stored anomaly info and then resumes
   document.querySelector(".details").addEventListener("click", () => {
     if (!pausedOnAnomaly || !pendingAnomalyData) return;
 
@@ -312,13 +338,13 @@ document.addEventListener("DOMContentLoaded", () => {
     detEl.innerText     = `Check Your Phone! Date: ${date} | Time: ${time} | Power: ${power} kW`;
     detEl.style.display = "block";
 
-    //immediately inject the stored point
+    //immediately inject the stored point for consistency
     document.getElementById("header-time").innerText    = time;
     document.getElementById("header-date").innerText    = date;
     document.querySelector(".last-updated").innerText   = `Last updated: ${time}`;
     document.getElementById("current-usage").innerText  = `${power} kW`;
 
-    //after 5s, hide details & resume
+    //after 5s, hide details & resume normal operation
     setTimeout(() => {
       detEl.style.display       = "none";
       pendingAnomalyData        = null;
@@ -329,14 +355,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 5000);
   });
 
-  //start everything
+  //start temperature animation and anomaly polling
   animateTemperature();
   checkAnomaly();
   anomalyInterval = setInterval(checkAnomaly, 1000);
   document.getElementById("anomaly-details").style.display = "none";
 
-  //initial insights
+  //initial insights and tips
   updateInsights();
   updateTips();
   updateSessionInsight();
+
+  //tutorial configuration using Intro.js
+  document
+    .getElementById("view-tutorial")
+    .addEventListener("click", () => {
+      introJs().setOptions({
+        steps: [
+          {
+            element: "#resolution-toggle",
+            intro: "Click here to cycle between minute, 30‑minute, hourly or daily usage!",
+          },
+          {
+            element: "#usageGraph",
+            intro: "This graph shows your live energy usage over time.",
+          },
+          {
+            element: "#insight-1",
+            intro: "Here’s insight into your current session, comparing the last 7 periods with the 7 before.",
+          },
+          {
+            element: "#insight-2",
+            intro: "And this one compares the kW usage in your current window vs. the previous window.",
+          },
+          {
+            element: ".tips h2",
+            intro: "Finally, these are personalized tips based on your usage that you can act on right now.",
+          },
+          {
+            intro:
+              "That’s it! Click “Done” to end this tutorial. Enjoy!",
+          },
+        ],
+        showBullets: false,
+        showProgress: true,
+        exitOnOverlayClick: false,
+      }).start();
+    });
 });
