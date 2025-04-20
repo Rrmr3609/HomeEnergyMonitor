@@ -12,7 +12,8 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 4. [Quickstart](#quickstart)  
 5. [API](#api)  
 6. [Project Structure](#project-structure)  
-7. [File Overview](#file-overview)  
+7. [Testing](#testing)
+8. [File Overview](#file-overview)  
 
 ---
 
@@ -102,21 +103,30 @@ resolution: The selected sampling frequency
 ## Project Structure
 
 HomeEnergyMonitor/
-├── app.py                         #Flask server - routes, grouping & anomaly-check logic
+├── pytest.ini                     #Pytest config 
+├── app.py                         #Flask server – routes, grouping and anomaly checking logic
 ├── anomaly_detector.py           #ML logic for IsolationForest training & prediction
-├── requirements.txt              #Pinned Python dependencies
-├── household_power_consumption.xlsx  #Dataset (can also be .csv)
-├── static/                       #Front‑end assets, served at /static/
-│   ├── index.html                #Single‑page UI (no templates folder)
-│   ├── style.css                 #Main stylesheet
-│   ├── main.js                   #Front‑end logic (Chart.js, polling, UI updates)
-│   └── img/                      #SVG icons (battery, thermostat, etc.)
-└── tests/                        #Unit tests
-    ├── conftest.py              #Shared test fixtures (patched data, dummy models, etc.)
-    ├── test_app.py              #Flask endpoint tests
-    └── test_anomaly_detector.py  #IsolationForest logic tests
+├── requirements.txt               #Pinned Python dependencies
+├── household_power_consumption.xlsx  #Dataset
+├── static/                        #Front‑end assets,
+│   ├── index.html                 #Single‑page UI
+│   ├── style.css                  #Main stylesheet
+│   ├── main.js                    #Front‑end logic (Chart.js, polling, UI updates)
+│   └── img/                       #SVG icons (battery, thermostat, etc.)
+└── tests/                         #Unit tests
+    ├── conftest.py                #Shared fixtures
+    ├── test_app.py                #Flask endpoint tests
+    ├── test_anomaly_detector.py   #IsolationForest logic tests
+    ├── test_cv.py                 #Cross‑validation accuracy tests
+    └── test_plot_model_behaviour.py  #Tests/plots for model behaviour graphs
 
 
+## Testing
+
+1. Open terminal
+2. Go to project root directory
+3. Do 'python -m pytest -s'
+4. Happy Testing!
 
 
 ## File Overview

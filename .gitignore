@@ -21,6 +21,7 @@ instance/
 
 #pytest
 .pytest_cache/
+pytest.ini
 *.cover
 .coverage
 coverage.xml

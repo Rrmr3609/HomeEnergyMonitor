@@ -62,14 +62,14 @@ def test_tips_endpoint(client, pct, dk, contains):
     assert any(contains in t for t in tips)
  
 def test_index_route_serves_html(client):  #test that the root index route serves HTML (index.html)
-    """ GET / should return index.html with HTML content """
+    #GET / should return index.html with HTML content
     rv = client.get('/')
     assert rv.status_code == 200
     #check for opening HTML tag or doctype
     assert b"<html" in rv.data.lower() or b"<!doctype html" in rv.data.lower()
 
 def test_send_telegram_no_token(monkeypatch):  #tests for send_telegram, behavior when no token/ID and when both are provided
-    """ If no TELEGRAM_BOT_TOKEN/CHAT_ID, send_telegram should not call requests.post """
+    #If no TELEGRAM_BOT_TOKEN/CHAT_ID, send_telegram should not call requests.post
     monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
     monkeypatch.delenv("TELEGRAM_CHAT_ID",   raising=False)
 
@@ -81,8 +81,7 @@ def test_send_telegram_no_token(monkeypatch):  #tests for send_telegram, behavio
     #expect no HTTP requests made
     assert calls == []
 
-def test_send_telegram_success(monkeypatch):
-    """ With valid token & chat_id, send_telegram calls requests.post once with correct payload """
+def test_send_telegram_success(monkeypatch):     #with valid token & chat_id, send_telegram calls requests.post once with correct payload
     #set environment variables for bot and chat
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "fake-token")
     monkeypatch.setenv("TELEGRAM_CHAT_ID",  "fake-chat")

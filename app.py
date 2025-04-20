@@ -35,7 +35,7 @@ grouped_data = group_power(data, current_resolution)
 model = fit_detector(grouped_data)
 
 #track the current index in the grouped data for polling
-event_index = 0  
+current_index = 0  
 index_lock = threading.Lock()  
 
 @app.route("/")
@@ -60,21 +60,18 @@ def send_telegram(msg: str):   #function to send a message via Telegram bot
     except Exception as e:
         app.logger.error("Telegram send failed: %s", e)
 
-@app.route("/current_status", methods=["GET"])
+
+@app.route("/current_status", methods=["GET"])    #polling endpoint for the latest aggregated power usage, returns JSON with timestamp, power, anomaly status, and optional Telegram notification
 def current_status():
-    """
-    Polling endpoint for the latest aggregated power usage.
-    Returns JSON with timestamp, power, anomaly status, and optional Telegram notification.
-    """
-    global current_resolution, grouped_data, model, event_index
+    global current_resolution, grouped_data, model, current_index
 
     #handle resolution change if requested
     requested_resolution = request.args.get("resolution")
     if requested_resolution and requested_resolution != current_resolution:
         last_ts = None
         #save the timestamp of the last retrieved data point
-        if grouped_data is not None and 0 <= event_index - 1 < len(grouped_data):
-            last_ts = grouped_data.iloc[event_index - 1]['group']
+        if grouped_data is not None and 0 <= current_index - 1 < len(grouped_data):
+            last_ts = grouped_data.iloc[current_index - 1]['group']
 
         #update grouping and model
         current_resolution = requested_resolution
@@ -84,17 +81,17 @@ def current_status():
         #find the new index corresponding to the previously used timestamp
         if last_ts is not None:
             inds = grouped_data[grouped_data['group'] >= last_ts].index
-            event_index = int(inds[0]) if len(inds) > 0 else 0
+            current_index = int(inds[0]) if len(inds) > 0 else 0
         else:
-            event_index = 0
+            current_index = 0
 
     with index_lock:
         #loop back to start if end is reached
-        if event_index >= len(grouped_data):
-            event_index = 0
+        if current_index >= len(grouped_data):
+            current_index = 0
 
         #extract the current data point
-        row = grouped_data.iloc[event_index]
+        row = grouped_data.iloc[current_index]
         timestamp = row['group']
         power = row['total_power']
 
@@ -117,11 +114,11 @@ def current_status():
             "resolution":   current_resolution
         }
 
-        event_index += 1  #move to the next data point for subsequent polls
+        current_index += 1  #move to the next data point for subsequent polls
 
         #if anomaly detected, compute deltas, insights, tips, and notify Telegram
         if response["anomalyFound"]:
-            idx = event_index - 1
+            idx = current_index - 1
 
             #compute deltaKw vs previous period
             if idx >= 1:
@@ -211,27 +208,19 @@ def current_status():
     #return JSON response to client
     return jsonify(response)
 
-@app.route("/anomaly", methods=["GET"])
+@app.route("/anomaly", methods=["GET"])    #alias endpoint to step back one index and return the previous status, useful for UI "back" behavior on detection
 def anomaly_endpoint():
-    """
-    Alias endpoint to step back one index and return the previous status.
-    Useful for UI "back" behavior on detection.
-    """
-    global event_index
+    global current_index
     with index_lock:
-        if event_index > 0:
-            event_index -= 1
+        if current_index > 0:
+            current_index -= 1
     return current_status()
 
-@app.route("/insights", methods=["GET"])
+@app.route("/insights", methods=["GET"])   #returns a JSON payload with seven period percentage change and delta kW, used for chart annotations and summary
 def insights():
-    """
-    Returns a JSON payload with seven-period percentage change and delta kW
-    used by the client for chart annotations and summary.
-    """
-    global grouped_data, event_index
+    global grouped_data, current_index
     with index_lock:
-        idx = event_index
+        idx = current_index
 
     #compute deltaKw vs one period ago
     if idx >= 2:

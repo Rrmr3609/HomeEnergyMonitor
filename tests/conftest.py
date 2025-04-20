@@ -5,7 +5,6 @@ import anomaly_detector as det
 from app import create_app
 
 #setting up the Flask app and sample data for testing
-
 @pytest.fixture
 def app():
     return create_app(test_config={})      #the Flask app instance configured for testing
