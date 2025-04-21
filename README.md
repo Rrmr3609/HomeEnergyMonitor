@@ -9,11 +9,12 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 1. [Features](#features)  
 2. [Prerequisites](#prerequisites)  
 3. [Configuration](#configuration)  
-4. [Quickstart](#quickstart)  
-5. [API](#api)  
-6. [Project Structure](#project-structure)  
-7. [Testing](#testing)
-8. [File Overview](#file-overview)  
+4. [Telegram Alerts Setup](telegram-alerts-setup)
+5. [Quickstart](#quickstart)  
+6. [API](#api)  
+7. [Project Structure](#project-structure)  
+8. [Testing](#testing)
+9. [File Overview](#file-overview)  
 
 ---
 
