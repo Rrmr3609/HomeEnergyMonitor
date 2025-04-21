@@ -49,38 +49,64 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 
 2. The app will fall back to ./household_power_consumption.xlsx if HOUSEHOLD_DATA_PATH is not set.
 
+---
+
+## Telegram Alerts Setup
+
+1. Create a Telgram Bot
+
+- Download and open Telegram and search for @BotFather
+- Run/newbot, follow the prompts and save the bot token it gives you
+
+2. Obtain your chat ID
+
+- Start a chat with your new bot
+- In your broswer url space type - https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates
+- Send a message to your bot, then refresh the page to find your chat.id within the given JSON response
+
+3. Set up your environment variables
+- Create a .env file in the project root with the following:
+     
+    TELEGRAM_BOT_TOKEN=your_bot_token_here
+    TELEGRAM_CHAT_ID=your_chat_id_here
+
+---
 
 ## Quickstart
 
-# 1. Clone & enter
+### 1. Clone & enter
 git clone https://github.com/Rrmr3609/HomeEnergyMonitor.git
 cd HomeEnergyMonitor
 
-# 2. Create & activate virtual environment
+### 2. Create & activate virtual environment
 python3 -m venv venv
 
-# macOS / Linux
+### macOS / Linux
 source venv/bin/activate
 
-# Windows (cmd.exe)
+### Windows (cmd.exe)
 venv\Scripts\activate.bat
 
-# 3. Install dependencies
+### 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. (Optional) Set dataset path if not in project root
+### 4. (Optional) Set dataset path if not in project root
 export HOUSEHOLD_DATA_PATH="/absolute/path/to/household_power_consumption.xlsx"
 
-# 5. Launch the server
+### 5. Launch the server
 python app.py
 
-# 6. Open in browser
+### 6. Open in browser
 http://localhost:5000
 
 
+---
+
 ## API
 
-' GET /current_status?resolution=<minute|30min|hour|day> ' - Returns the next simulated time slice, runs anomaly detection, and responds with:
+GET /current_status?resolution=<minute|30min|hour|day>
+
+Returns the next simulated time slice, runs anomaly detection, and responds with:
 
 {
   "status": "No Anomalies Detected!",
@@ -99,6 +125,8 @@ time, date: Formatted timestamp
 
 resolution: The selected sampling frequency
 
+
+---
 
 ## Project Structure
 
@@ -121,6 +149,8 @@ HomeEnergyMonitor/
     └── test_plot_model_behaviour.py  #Tests/plots for model behaviour graphs
 
 
+---
+
 ## Testing
 
 1. Open terminal
@@ -128,6 +158,7 @@ HomeEnergyMonitor/
 3. Do 'python -m pytest -s'
 4. Happy Testing!
 
+---
 
 ## File Overview
 
