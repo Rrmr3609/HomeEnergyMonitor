@@ -31,7 +31,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 - **Python 3.8+**  
 - [pip](https://pip.pypa.io/)  
 - A copy of the [Household Power Consumption dataset](https://www.kaggle.com/datasets/thedevastator/240000-household-electricity-consumption-records/data) in `.xlsx` form  
-
+- Credits to Georges Hébrail and Alice Bérard, the original authors of the dataset that is being utilised.
 ---
 
 ## Configuration
