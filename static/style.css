@@ -465,7 +465,7 @@ header.top-bar {
   transform: translateY(-4px);       
 }
 
-/* Action Buttons (Presets, History, Tutorial) */
+/* Action Buttons */
 
 .action-buttons {
   display: flex;
@@ -475,6 +475,30 @@ header.top-bar {
   width: 100%;             
   margin: 2rem auto;       
 }
+
+/* ANOMALY POPUP */
+
+.anomaly-popup {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #E53935;          
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  z-index: 1000;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.anomaly-popup.visible {
+  opacity: 1;
+}
+
 
 /* Footer */
 

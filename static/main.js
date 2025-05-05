@@ -1,6 +1,6 @@
 // ----- Available Resolutions Configuration -----
 
-const resolutions = [   //defines the different time resolutions for data aggregation and respective UI labels
+const resolutions = [   //defines the different time resolutions for data aggregation and UI labels
   {
     key: "minute",
     buttonLabel: "Per Minute",
@@ -114,9 +114,9 @@ async function updateTips() {    //updates the personalised tips section and sho
   //if insufficient data, show default gathering data tips
   if (insight1Data.length < 14) {
     tipsEls[0].innerText =
-      "Gathering data on your usage — more detailed insights will appear once we have more readings.";
+      "Gathering data on your usage - more detailed insights will appear once we have more readings.";
     tipsEls[1].innerText =
-      "Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you’re not using.";
+      "Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you're not using.";
     return;
   }
 
@@ -149,6 +149,25 @@ async function updateTips() {    //updates the personalised tips section and sho
     tipsEls[1].innerText = "";
   }
 }
+
+/**
+ * Creates a temporary popup at top-center, fades in, out, then removes itself.
+ * @param {string} message  
+ */
+function showAnomalyPopup(message) {
+  const popup = document.createElement('div');
+  popup.className = 'anomaly-popup';
+  popup.textContent = message;
+  document.body.appendChild(popup);
+  // fade in
+  setTimeout(() => popup.classList.add('visible'), 50);
+  // fade out & remove after 2s
+  setTimeout(() => {
+    popup.classList.remove('visible');
+    setTimeout(() => popup.remove(), 300);
+  }, 2000);
+}
+
 
 
 // ----- Anomaly Polling and UI Updates -----
@@ -208,6 +227,7 @@ async function checkAnomaly() {    //periodically polls for anomaly status, upda
 
     //on first anomaly detection, pause updates and store data for detail view
     if (data.status !== "No Anomalies Detected!" && !anomalyHandled) {
+      showAnomalyPopup('Anomaly Detected!');
       pendingAnomalyData = { date: fixedDate, time, power };
       anomalyHandled     = true;
       pausedOnAnomaly    = true;
@@ -344,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".last-updated").innerText   = `Last updated: ${time}`;
     document.getElementById("current-usage").innerText  = `${power} kW`;
 
-    //after 5s, hide details & resume normal operation
+    //after 5s, hide details and resume normal operation
     setTimeout(() => {
       detEl.style.display       = "none";
       pendingAnomalyData        = null;
@@ -374,15 +394,15 @@ document.addEventListener("DOMContentLoaded", () => {
         steps: [
           {
             element: "#resolution-toggle",
-            intro: "Click here to cycle between minute, 30‑minute, hourly or daily usage!",
+            intro: "Click here to cycle between minute, 30 minute, hourly or daily usage!",
           },
           {
             element: "#usageGraph",
-            intro: "This graph shows your live energy usage over time.",
+            intro: "This graph shows your live energy usage over time, updating every second..",
           },
           {
             element: "#insight-1",
-            intro: "Here’s insight into your current session, comparing the last 7 periods with the 7 before.",
+            intro: "Here's insight into your current session, comparing the last 7 periods with the 7 before.",
           },
           {
             element: "#insight-2",
@@ -390,11 +410,11 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           {
             element: ".tips h2",
-            intro: "Finally, these are personalized tips based on your usage that you can act on right now.",
+            intro: "Finally, these are personalised tips based on your usage that you can act on right now.",
           },
           {
             intro:
-              "That’s it! Click “Done” to end this tutorial. Enjoy!",
+              "That's it! Click “Done” to end this tutorial. Enjoy!",
           },
         ],
         showBullets: false,

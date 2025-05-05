@@ -11,10 +11,8 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 3. [Configuration](#configuration)  
 4. [Telegram Alerts Setup](#telegram-alerts-setup)
 5. [Quickstart](#quickstart)  
-6. [API](#api)  
-7. [Project Structure](#project-structure)  
-8. [Testing](#testing)
-9. [File Overview](#file-overview)  
+6. [Testing](#testing)
+7. [File Overview](#file-overview)  
 
 ---
 
@@ -32,7 +30,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 
 - **Python 3.8+**  
 - [pip](https://pip.pypa.io/)  
-- A copy of the [Household Power Consumption dataset](https://archive.ics.uci.edu/ml/datasets/individual+household+electric+power+consumption) in `.xlsx` or `.csv` form  
+- A copy of the [Household Power Consumption dataset](https://www.kaggle.com/datasets/thedevastator/240000-household-electricity-consumption-records/data) in `.xlsx` form  
 
 ---
 
@@ -57,7 +55,7 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 1. Create a Telgram Bot
 
 - Download and open Telegram and search for @BotFather
-- Run/newbot, follow the prompts and save the bot token it gives you
+- Run /newbot, follow the prompts and save the bot token it gives you
 
 2. Obtain your chat ID
 
@@ -100,56 +98,6 @@ python app.py
 ### 6. Open in browser
 http://localhost:5000
 
-
----
-
-## API
-
-GET /current_status?resolution=<minute|30min|hour|day>
-
-Returns the next simulated time slice, runs anomaly detection, and responds with:
-
-{
-  "status": "No Anomalies Detected!",
-  "latestPower": 1.234,
-  "time": "12:34",
-  "date": "27/07/2025",
-  "resolution": "minute"
-}
-
-
-status: "Anomaly Detected!" or "No Anomalies Detected!"
-
-latestPower: Aggregated total_power for that time slice
-
-time, date: Formatted timestamp
-
-resolution: The selected sampling frequency
-
-
----
-
-## Project Structure
-
-HomeEnergyMonitor/
-├── pytest.ini                     #Pytest config 
-├── app.py                         #Flask server – routes, grouping and anomaly checking logic
-├── anomaly_detector.py           #ML logic for IsolationForest training & prediction
-├── requirements.txt               #Pinned Python dependencies
-├── household_power_consumption.xlsx  #Dataset
-├── static/                        #Front‑end assets,
-│   ├── index.html                 #Single‑page UI
-│   ├── style.css                  #Main stylesheet
-│   ├── main.js                    #Front‑end logic (Chart.js, polling, UI updates)
-│   └── img/                       #SVG icons (battery, thermostat, etc.)
-└── tests/                         #Unit tests
-    ├── conftest.py                #Shared fixtures
-    ├── test_app.py                #Flask endpoint tests
-    ├── test_anomaly_detector.py   #IsolationForest logic tests
-    ├── test_cv.py                 #Cross‑validation accuracy tests
-    └── test_plot_model_behaviour.py  #Tests/plots for model behaviour graphs
-
-
 ---
 
 ## Testing
@@ -165,7 +113,7 @@ HomeEnergyMonitor/
 
 app.py — Loads the dataset, manages time-slice grouping, fits the IsolationForest model, and serves both the static UI and the JSON API
 
-anomaly_detector.py — Encapsulates preprocessing and ML logic, allowing for independent testing
+anomaly_detector.py — Encapsulates preprocessing and ML logic, allowing independent testing
 
 static/index.html — The single-page front-end UI; references /static/style.css and /static/mainjs
 

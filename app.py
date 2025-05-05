@@ -52,7 +52,7 @@ def send_telegram(msg: str):   #function to send a message via Telegram bot
     payload = {
         "chat_id":    chat_id,
         "text":       msg,
-        "parse_mode": "Markdown"  # Use Markdown for text formatting
+        "parse_mode": "Markdown"  #use Markdown for text formatting
     }
     try:
         #send the HTTP POST to Telegram
@@ -140,39 +140,39 @@ def current_status():
             #default placeholder tips when insufficient insight data
             if sevenPctChange == 0.0 and deltaKw == 0.0:
                 tips.append(
-                    "Gathering data on your usage — more detailed insights will appear "
+                    "Gathering data on your usage - more detailed insights will appear "
                     "once we have a full week of readings."
                 )
                 tips.append(
                     "Your usage is steady. Unused devices can still draw phantom power. "
-                    "Try unplugging what you’re not using."
+                    "Try unplugging what you're not using."
                 )
             else:
                 #personalised tips based on computed metrics
                 if sevenPctChange < 0:
                     tips.append(
-                        f"Nice work cutting your average usage by {abs(sevenPctChange):.1f}% — "
-                        "keep it up by scheduling your heating off 30 minutes earlier each evening."
+                        f"Nice work cutting your average usage by {abs(sevenPctChange):.1f}% - "
+                        "keep it up by scheduling your heating off 30 minutes earlier each evening."
                     )
                 else:
                     tips.append(
-                        f"Your average usage rose by {sevenPctChange:.1f}% — "
-                        "try lowering your thermostat by 1°C during off‑peak hours."
+                        f"Your average usage rose by {sevenPctChange:.1f}% - "
+                        "try lowering your thermostat by 1°C during off-peak hours."
                     )
 
                 if deltaKw > 0.5:
                     tips.append(
-                        "We saw a spike this period. Check if any high‑draw appliances (e.g. dryer) are still running."
+                        "We saw a spike this period. Check if any high-draw appliances (e.g. dryer) are still running."
                     )
                 elif deltaKw < -0.2:
                     tips.append(
-                        "Good job smoothing out that spike in usage — consider running washing/dishwashers "
-                        "in eco‑mode to save even more."
+                        "Good job smoothing out that spike in usage - consider running washing/dishwashers "
+                        "in eco-mode to save even more."
                     )
                 else:
                     tips.append(
                         "Your usage is steady. Unused devices can still draw phantom power. "
-                        "Try unplugging what you’re not using."
+                        "Try unplugging what you're not using."
                     )
 
             #ensure at least two tips
@@ -182,8 +182,8 @@ def current_status():
             #prepare insight lines for Telegram message
             insight_lines = []
             if sevenPctChange != 0.0:
-                insight_lines.append(f"• 7‑period Δ: {sevenPctChange:.1f}%")
-            insight_lines.append(f"• Last‑window Δ: {deltaKw:.3f} kW")
+                insight_lines.append(f"• 7-period Δ: {sevenPctChange:.1f}%")
+            insight_lines.append(f"• Last-window Δ: {deltaKw:.3f} kW")
 
             #cleanup placeholder tips if no real insight
             if sevenPctChange == 0.0 and tips:
@@ -243,12 +243,8 @@ def insights():
         "deltaKw":        deltaKw
     })
 
-@app.route("/tips", methods=["GET"])
-def tips():
-    """
-    Returns JSON array of tips based on query params "sevenPctChange" and "deltaKw".
-    Falls back to default guidance if insufficient data.
-    """
+@app.route("/tips", methods=["GET"])   
+def tips():   #returns JSON array of tips based on query params "sevenPctChange" and "deltaKw", falls back to default guidance if not enough data
     try:
         pct = float(request.args.get("sevenPctChange", 0))
         dk  = float(request.args.get("deltaKw",  0))
@@ -259,8 +255,8 @@ def tips():
     if pct == 0.0 and dk == 0.0:
         return jsonify({
             "tips": [
-                "Gathering data on your usage — more detailed insights will appear once we have a full week of readings.",
-                "Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you’re not using."
+                "Gathering data on your usage - more detailed insights will appear once we have a full week of readings.",
+                "Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you're not using."
             ]
         })
 
@@ -269,20 +265,20 @@ def tips():
     if pct < 0:
         tips.append(
             "Nice work cutting your average use by "
-            f"{abs(pct):.1f}% — keep it up by scheduling your heating off 30 minutes earlier each evening."
+            f"{abs(pct):.1f}% - keep it up by scheduling your heating off 30 minutes earlier each evening."
         )
     else:
         tips.append(
             "Your average usage rose by "
-            f"{pct:.1f}% — try lowering your thermostat by 1°C during off‑peak hours."
+            f"{pct:.1f}% — try lowering your thermostat by 1°C during off-peak hours."
         )
 
     if dk > 0.5:
-        tips.append("We saw a spike this period. Check if any high‑draw appliances (e.g. dryer) are still running.")
+        tips.append("We saw a spike this period. Check if any high-draw appliances (e.g. dryer) are still running.")
     elif dk < -0.2:
-        tips.append("Good job smoothing out that spike in usage — consider running washing/dishwashers in eco‑mode to save even more.")
+        tips.append("Good job smoothing out that spike in usage - consider running washing/dishwashers in eco-mode to save even more.")
     else:
-        tips.append("Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you’re not using.")
+        tips.append("Your usage is steady. Unused devices can still draw phantom power. Try unplugging what you're not using.")
 
     #ensure at least two tips
     if len(tips) < 2:
