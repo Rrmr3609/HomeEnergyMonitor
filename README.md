@@ -21,9 +21,9 @@ A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household po
 - **Real‑time line charts** at minute / 30‑min / hourly / daily resolutions  
 - **Anomaly detection** powered by `IsolationForest` (10% contamination)  
 - **Temperature animation** and target‑adjust controls  
-- Stubbed buttons for presets, history, and tutorials  
-- Responsive CSS layout  
-
+- **Responsive** CSS layout  
+- **Telegram alerts** with real-time anomaly insights
+- **Interactive tutorial** (via Intro.js)
 ---
 
 ## Prerequisites
@@ -115,6 +115,6 @@ app.py — Loads the dataset, manages time-slice grouping, fits the IsolationFor
 
 anomaly_detector.py — Encapsulates preprocessing and ML logic, allowing independent testing
 
-static/index.html — The single-page front-end UI; references /static/style.css and /static/mainjs
+static/index.html — The single-page frontend UI; references /static/style.css and /static/main.js
 
 tests/ — Contains pytest files to verify API functionality and model behavior
