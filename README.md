@@ -1,6 +1,6 @@
 # Home Energy Monitor
 
-A **Flask** + plain‑HTML/CSS/JS single‑page app that visualises household power consumption and flags anomalies in real time
+A lightweight web app built with Flask and vanilla JS that visualises household energy usage and detects anomalies in real time.
 
 ---
 
@@ -96,7 +96,7 @@ export HOUSEHOLD_DATA_PATH="/absolute/path/to/household_power_consumption.xlsx"
 python app.py
 
 ### 6. Open in browser
-http://localhost:5000
+http://127.0.0.1:5000
 
 ---
 

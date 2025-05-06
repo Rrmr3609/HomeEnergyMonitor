@@ -87,7 +87,7 @@ async function updateInsights() {    //fetches server driven insight (Insight 2
     const kw   = Math.abs(deltaKw).toFixed(3);
     const dir2 = deltaKw >= 0 ? "higher" : "lower";
     document.getElementById("insight-2").innerText =
-      `Your current window's total energy usage is ${kw} kW ${dir2} than the previous window.`;
+      `Your current window's total energy usage is ${kw} kW ${dir2} than the previous window.`;
 
     //dynamic footer message based on performance
     const footerEl = document.querySelector(".insights .success");
@@ -151,7 +151,7 @@ async function updateTips() {    //updates the personalised tips section and sho
 }
 
 /**
- * Creates a temporary popup at top-center, fades in, out, then removes itself.
+ * //Creates a temporary popup notification
  * @param {string} message  
  */
 function showAnomalyPopup(message) {
@@ -159,15 +159,14 @@ function showAnomalyPopup(message) {
   popup.className = 'anomaly-popup';
   popup.textContent = message;
   document.body.appendChild(popup);
-  // fade in
+  //fade in
   setTimeout(() => popup.classList.add('visible'), 50);
-  // fade out & remove after 2s
+  //fade out & remove after 2s
   setTimeout(() => {
     popup.classList.remove('visible');
     setTimeout(() => popup.remove(), 300);
   }, 2000);
 }
-
 
 
 // ----- Anomaly Polling and UI Updates -----
@@ -301,7 +300,7 @@ function animateTemperature() {   //animates the current temperature towards the
   }, 5000);
 }
 
-function updateTargetTemperature(change) {   //adjusts the target temperature by the given change (+/-) and animates again
+function updateTargetTemperature(change) {   //adjusts the target temperature by the given change and animates again
   const el = document.getElementById("target-temperature");
   let temp = parseInt(el.innerText, 10) + change;
   el.innerText = `${temp}°C`;

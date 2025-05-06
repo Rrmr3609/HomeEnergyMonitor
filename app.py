@@ -270,7 +270,7 @@ def tips():   #returns JSON array of tips based on query params "sevenPctChange"
     else:
         tips.append(
             "Your average usage rose by "
-            f"{pct:.1f}% — try lowering your thermostat by 1°C during off-peak hours."
+            f"{pct:.1f}% - try lowering your thermostat by 1°C during off-peak hours."
         )
 
     if dk > 0.5:
